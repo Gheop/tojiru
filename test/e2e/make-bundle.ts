@@ -33,6 +33,8 @@ export async function makeBundle(outDir: string): Promise<void> {
 }
 
 // Permet de générer le bundle en ligne de commande avant Playwright.
-if (process.argv[2]) {
+// La garde import.meta.url empêche l'exécution lors d'un import par globalSetup.
+const isMain = process.argv[1]?.endsWith('make-bundle.ts') || process.argv[1]?.endsWith('make-bundle.js')
+if (isMain && process.argv[2]) {
   makeBundle(process.argv[2]).then(() => console.log('bundle prêt'))
 }
