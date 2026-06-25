@@ -22,6 +22,7 @@
   "dependencies": {
     "@types/yauzl": "^3.4.0",
     "commander": "^12.1.0",
+    "node-unrar-js": "^2.0.2",
     "sharp": "^0.33.4",
     "yauzl": "^3.4.0"
   },
