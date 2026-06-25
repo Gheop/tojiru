@@ -110,6 +110,10 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.1.2 — Version reporting (2026-06-25)
+
+- `tojiru --version` now reads the version from `package.json`, so it always matches the published version
+
 ### v0.1.1 — Scoped package name (2026-06-25)
 
 - Published on npm as `@gheop/tojiru` (the unscoped `tojiru` name was taken); the installed command is still `tojiru`
