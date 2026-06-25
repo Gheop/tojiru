@@ -8,15 +8,22 @@ async function loadManifest() {
   return res.json()
 }
 
-async function inflate(file) {
+async function fetchSvg(file) {
   const res = await fetch(file)
-  const stream = res.body.pipeThrough(new DecompressionStream('gzip'))
-  return new Response(stream).text()
+  const buf = new Uint8Array(await res.arrayBuffer())
+  // If the host already applied Content-Encoding: gzip, the browser inflated it
+  // and these bytes are plain SVG (no gzip magic). Only inflate when the bytes
+  // are actually gzip — so the reader works on any host, no header dependency.
+  if (buf[0] === 0x1f && buf[1] === 0x8b) {
+    const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))
+    return new Response(stream).text()
+  }
+  return new TextDecoder().decode(buf)
 }
 
 async function loadPage(p) {
   if (p.type === 'vector') {
-    const text = await inflate(p.file)
+    const text = await fetchSvg(p.file)
     const tpl = document.createElement('template')
     tpl.innerHTML = text.trim()
     return tpl.content.firstElementChild

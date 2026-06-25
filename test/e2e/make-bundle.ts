@@ -7,7 +7,7 @@ import { writeFolder } from '../../src/output/folder.js'
 import type { Document } from '../../src/extractors/types.js'
 
 function svg(label: string): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><rect width="200" height="300" fill="#fff"/><text x="20" y="60" font-size="24">${label}</text></svg>`
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><rect width="200" height="300" fill="#fff"/><text x="20" y="60" font-size="24">${label}</text></svg>`
 }
 
 export async function makeBundle(outDir: string): Promise<void> {

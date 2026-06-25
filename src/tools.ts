@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 
 // Détecte la présence d'un binaire via `command -v` (POSIX) sans dépendance.
+// Interne : construit une commande shell ; n'appeler qu'avec des noms hardcodés et de confiance ('pdftocairo', 'mutool').
 export function hasBinary(cmd: string): Promise<boolean> {
   return new Promise((resolve) => {
     const probe = spawn('command', ['-v', cmd], { shell: true, stdio: 'ignore' })
