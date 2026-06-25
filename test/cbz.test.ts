@@ -21,3 +21,17 @@ test('extrait un CBZ en pages raster triées avec dimensions', async () => {
   expect(doc.pages[0].h).toBeGreaterThan(0)
   rmSync(work, { recursive: true, force: true })
 })
+
+test('extrait un CBZ dont les entrées ont un slash initial', async () => {
+  const fixture = new URL('./fixtures/leading-slash.cbz', import.meta.url).pathname
+  const work = mkdtempSync(join(tmpdir(), 'tojiru-cbzslash-'))
+  try {
+    const doc = await cbzExtractor.extract(fixture, work)
+    expect(doc.pages).toHaveLength(2)
+    expect(doc.pages[0].type).toBe('raster')
+    expect((doc.pages[0] as any).w).toBeGreaterThanOrEqual(1)
+    expect((doc.pages[0] as any).h).toBeGreaterThanOrEqual(1)
+  } finally {
+    rmSync(work, { recursive: true, force: true })
+  }
+})

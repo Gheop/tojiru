@@ -9,7 +9,7 @@ import { isImage, naturalCompare, imageDims } from './images.js'
 
 function openZip(file: string): Promise<yauzl.ZipFile> {
   return new Promise((resolve, reject) => {
-    yauzl.open(file, { lazyEntries: true }, (err, zip) => (err ? reject(err) : resolve(zip)))
+    yauzl.open(file, { lazyEntries: true, decodeStrings: false }, (err, zip) => (err ? reject(err) : resolve(zip)))
   })
 }
 
@@ -18,10 +18,11 @@ function extractAll(zip: yauzl.ZipFile, workdir: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const out: string[] = []
     zip.on('entry', (entry: yauzl.Entry) => {
-      if (entry.fileName.endsWith('/') || !isImage(entry.fileName)) { zip.readEntry(); return }
+      const name = (entry.fileName as unknown as Buffer).toString('utf8')
+      if (name.endsWith('/') || !isImage(name)) { zip.readEntry(); return }
       zip.openReadStream(entry, async (err, rs) => {
         if (err) return reject(err)
-        const dest = join(workdir, basename(entry.fileName))
+        const dest = join(workdir, basename(name))
         try { await pipeline(rs, createWriteStream(dest)); out.push(dest); zip.readEntry() }
         catch (e) { reject(e) }
       })
