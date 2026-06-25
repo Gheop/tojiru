@@ -1,37 +1,37 @@
 # Bench — tojiru
 
-Mesures du 2026-06-25. Commande : `tojiru <fichier> --out <dossier>`.
-Ratio = taille du bundle de sortie / taille du fichier d'entrée.
+Measurements from 2026-06-25. Command: `tojiru <file> --out <folder>`.
+Ratio = output bundle size / input file size.
 
-## Résultats (5 formats + contre-exemples PDF)
+## Results (5 formats + PDF counter-examples)
 
-| Échantillon | Format | Pages | Entrée | Bundle | Ratio |
+| Sample | Format | Pages | Input | Bundle | Ratio |
 |---|---|---|---|---|---|
-| Les non-humains (Ploum) | PDF texte vectoriel — Type1 | 9 | 202 Ko | 186 Ko | **×0,92** |
-| Little Brother (Doctorow) | PDF texte vectoriel — TrueType | 134 | 1,9 Mo | 10,5 Mo | ×5,6 |
-| Pepper&Carrot ép.1 | PDF (BD raster) | 4 | 163 Ko | 5,5 Mo | ×33,9 |
-| NASA SP-4012 v2 | PDF scanné + OCR | 642 | 8,0 Mo | 80,7 Mo | ×10,1 |
-| Pepper&Carrot ép.1 | CBZ | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
-| Pepper&Carrot ép.1 | CB7 | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
-| The Fanscient #03 | CBR | 32 | 6,5 Mo | 7,1 Mo | ×1,08 |
-| Macaulay (essai) | DjVu | 163 | 2,6 Mo | 15,0 Mo | ×6,0 |
+| Les non-humains (Ploum) | PDF vector text — Type1 | 9 | 202 KB | 186 KB | **×0.92** |
+| Little Brother (Doctorow) | PDF vector text — TrueType | 134 | 1.9 MB | 10.5 MB | ×5.6 |
+| Pepper&Carrot ep.1 | PDF (raster comic) | 4 | 163 KB | 5.5 MB | ×33.9 |
+| NASA SP-4012 v2 | PDF scanned + OCR | 642 | 8.0 MB | 80.7 MB | ×10.1 |
+| Pepper&Carrot ep.1 | CBZ | 4 | 1.0 MB | 1.1 MB | ×1.06 |
+| Pepper&Carrot ep.1 | CB7 | 4 | 1.0 MB | 1.1 MB | ×1.06 |
+| The Fanscient #03 | CBR | 32 | 6.5 MB | 7.1 MB | ×1.08 |
+| Macaulay (essay) | DjVu | 163 | 2.6 MB | 15.0 MB | ×6.0 |
 
-## Lecture
+## Reading the numbers
 
-**PDF texte vectoriel — le cas où tojiru brille.** Sur « Les non-humains » (polices Type1 intégrées), le bundle est *plus petit* que le PDF source (×0,92), avec un texte SVG net et scalable à l'infini. Sur Little Brother (TrueType), c'est ×5,6 : toujours du vrai vectoriel, rendu impeccable, mais plus lourd. La différence vient de l'encodage des polices : pour du Type1, `pdftocairo` réutilise chaque glyphe via `<symbol>`/`<use>` ; pour du TrueType, il émet un `<path>` par occurrence de glyphe. Le rendu est identique, c'est le poids qui change.
+**PDF vector text — where tojiru shines.** On "Les non-humains" (embedded Type1 fonts), the bundle is *smaller* than the source PDF (×0.92), with clean, infinitely scalable SVG text. On Little Brother (TrueType), it's ×5.6: still real vector, flawless rendering, but heavier. The difference comes from font encoding: for Type1, `pdftocairo` reuses each glyph via `<symbol>`/`<use>`; for TrueType, it emits one `<path>` per glyph occurrence. Rendering is identical, only the weight changes.
 
-**Archives BD (CBZ/CB7/CBR) — bundle ≈ entrée.** Les pages sont déjà des images : tojiru les copie et ajoute des miniatures. Pas de gonflement (×1,06 à ×1,08).
+**Comic archives (CBZ/CB7/CBR) — bundle ≈ input.** Pages are already images: tojiru copies them and adds thumbnails. No bloat (×1.06 to ×1.08).
 
-**PDF raster ou scanné — la limite.** Quand les pages d'un PDF sont des images (BD raster ×33,9 ; scan NASA ×10,1), `pdftocairo` enrobe chaque image dans du SVG, ce qui pèse plus que l'image d'origine. Le NASA SP-4012 illustre le piège : il a une couche OCR (texte extractible) mais l'affichage est un scan, donc il est traité comme du raster. tojiru n'est pas fait pour du scanné ; il est fait pour du texte vectoriel.
+**Raster or scanned PDF — the limit.** When PDF pages are images (raster comic ×33.9; NASA scan ×10.1), `pdftocairo` wraps each image in SVG, which weighs more than the original image. NASA SP-4012 illustrates the trap: it has an OCR layer (extractable text) but the display is a scan, so it is treated as raster. tojiru is not designed for scanned content; it is designed for vector text.
 
-**DjVu ×6,0 — WebP lossless, après un détour instructif.** `ddjvu` rend chaque page en raster RGB. Premier essai en WebP *lossy* (q82) : ×29,4, soit pire que le PNG (×15,8) **et** dégradé. Macaulay est un scan de texte bi-tonal (1 bit/pixel) ; le WebP lossy ajoute du bruit JPEG sur les bords de texte et gonfle. La bonne réponse, mesurée : **WebP lossless** (effort 6), qui fait ~50 % du PNG → ×6,0, sans aucune perte. Le bundle reste plus gros que la source parce que la compression bi-tonale JB2 du DjVu bat n'importe quel format raster généraliste ; rastériser a un coût. Un DjVu à contenu photo descendrait bien plus bas.
+**DjVu ×6.0 — WebP lossless, after an instructive detour.** `ddjvu` renders each page as raster RGB. First attempt with WebP *lossy* (q82): ×29.4, worse than PNG (×15.8) **and** degraded. Macaulay is a bitonal text scan (1 bit/pixel); lossy WebP adds JPEG noise on text edges and bloats. The measured answer: **WebP lossless** (effort 6), which hits ~50% of PNG → ×6.0, with zero quality loss. The bundle is still larger than the source because DjVu's bitonal JB2 compression beats any general-purpose raster format; rasterizing has a cost. A photo-content DjVu would land much lower.
 
-## Méthode
+## Method
 
-Bench réel via le CLI sur le corpus de `fetch-samples.sh`. Pour reproduire :
+Real bench via the CLI on the `fetch-samples.sh` corpus. To reproduce:
 
 ```bash
 bash examples/fetch-samples.sh
-tojiru examples/samples/<fichier> --out /tmp/bench --force
+tojiru examples/samples/<file> --out /tmp/bench --force
 du -sh /tmp/bench
 ```
