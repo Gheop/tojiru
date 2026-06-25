@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 import { basename, join } from 'node:path'
 import sharp from 'sharp'
-import type { Document } from './extractors/types.js'
+import type { Document, ProgressFn } from './extractors/types.js'
 
 export interface ProcessedPage {
   n: number
@@ -17,6 +17,7 @@ export async function processPages(
   doc: Document,
   outDir: string,
   opts: { thumbWidth?: number } = {},
+  onProgress?: ProgressFn,
 ): Promise<ProcessedPage[]> {
   const thumbWidth = opts.thumbWidth ?? 150
   const width = Math.max(4, String(doc.pages.length).length)
@@ -43,6 +44,7 @@ export async function processPages(
       await sharp(page.imagePath).resize({ width: thumbWidth }).webp().toFile(join(outDir, thumb))
       out.push({ n, type: 'raster', w: page.w, h: page.h, file, thumb })
     }
+    onProgress?.(i + 1, doc.pages.length, 'Processing')
   }
   return out
 }

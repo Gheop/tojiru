@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import sharp from 'sharp'
-import type { Document, Extractor, RasterPage } from './types.js'
+import type { Document, Extractor, ProgressFn, RasterPage } from './types.js'
 import { detectKind } from './detect.js'
 import { hasBinary } from '../tools.js'
 import { run } from '../run.js'
@@ -17,7 +17,7 @@ async function pageCount(file: string): Promise<number> {
 export const djvuExtractor: Extractor = {
   name: 'djvu',
   async canHandle(file) { return (await detectKind(file)) === 'djvu' },
-  async extract(file, workdir) {
+  async extract(file, workdir, onProgress?: ProgressFn) {
     if (!(await hasBinary('ddjvu')) || !(await hasBinary('djvused'))) {
       throw new Error('djvulibre not found. Install djvulibre (ddjvu, djvused).')
     }
@@ -34,6 +34,7 @@ export const djvuExtractor: Extractor = {
       // which bloats and degrades text edges on bitonal content.
       await sharp(tiff).webp({ lossless: true, effort: 6 }).toFile(webp)
       pages.push({ type: 'raster', imagePath: webp, ...(await imageDims(webp)) })
+      onProgress?.(i, count, 'Converting')
     }
     return { title: basename(file, extname(file)), kind: 'djvu', pages }
   },

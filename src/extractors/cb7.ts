@@ -1,6 +1,6 @@
 import { mkdir, readdir } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
-import type { Document, Extractor, RasterPage } from './types.js'
+import type { Document, Extractor, ProgressFn, RasterPage } from './types.js'
 import { detectKind } from './detect.js'
 import { hasBinary } from '../tools.js'
 import { run } from '../run.js'
@@ -9,7 +9,7 @@ import { isImage, naturalCompare, imageDims } from './images.js'
 export const cb7Extractor: Extractor = {
   name: 'cb7',
   async canHandle(file) { return (await detectKind(file)) === 'cb7' },
-  async extract(file, workdir) {
+  async extract(file, workdir, _onProgress?: ProgressFn) {
     if (!(await hasBinary('7z'))) throw new Error('7z not found. Install p7zip (package p7zip / p7zip-full).')
     await mkdir(workdir, { recursive: true })
     // -y: yes to all; e: extract flat (no directory structure); -o: output folder

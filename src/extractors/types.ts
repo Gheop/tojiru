@@ -10,8 +10,10 @@ export interface Document {
   pages: Page[]
 }
 
+export type ProgressFn = (done: number, total: number, label: string) => void
+
 export interface Extractor {
   name: Kind
   canHandle(file: string): Promise<boolean>
-  extract(file: string, workdir: string): Promise<Document>
+  extract(file: string, workdir: string, onProgress?: ProgressFn): Promise<Document>
 }

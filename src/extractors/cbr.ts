@@ -1,14 +1,14 @@
 import { mkdir, readdir } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { createExtractorFromFile } from 'node-unrar-js'
-import type { Document, Extractor, RasterPage } from './types.js'
+import type { Document, Extractor, ProgressFn, RasterPage } from './types.js'
 import { detectKind } from './detect.js'
 import { isImage, naturalCompare, imageDims } from './images.js'
 
 export const cbrExtractor: Extractor = {
   name: 'cbr',
   async canHandle(file) { return (await detectKind(file)) === 'cbr' },
-  async extract(file, workdir) {
+  async extract(file, workdir, _onProgress?: ProgressFn) {
     await mkdir(workdir, { recursive: true })
     // filenameTransform strips any directory component so that entries with
     // `../` or absolute paths cannot escape workdir (zip-slip defence).

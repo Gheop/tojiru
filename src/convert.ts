@@ -10,13 +10,14 @@ import { djvuExtractor } from './extractors/djvu.js'
 import { processPages } from './pages.js'
 import { buildManifest } from './manifest.js'
 import { writeFolder } from './output/folder.js'
-import type { Extractor } from './extractors/types.js'
+import type { Extractor, ProgressFn } from './extractors/types.js'
 
 const EXTRACTORS: Extractor[] = [pdfExtractor, cbzExtractor, cb7Extractor, cbrExtractor, djvuExtractor]
 
 export interface ConvertOptions {
   outDir: string
   title?: string
+  onProgress?: ProgressFn
 }
 
 export interface ConvertResult {
@@ -33,10 +34,10 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
 
   const work = await mkdtemp(join(tmpdir(), 'tojiru-'))
   try {
-    const doc = await extractor.extract(input, work)
+    const doc = await extractor.extract(input, work, opts.onProgress)
     if (opts.title) doc.title = opts.title
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
-    const pages = await processPages(doc, opts.outDir)
+    const pages = await processPages(doc, opts.outDir, {}, opts.onProgress)
     await writeFolder(buildManifest(doc.title, doc.kind, pages), opts.outDir)
     return { outDir: opts.outDir, pageCount: doc.pages.length }
   } finally {

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
-import type { Document, Extractor, VectorPage } from './types.js'
+import type { Document, Extractor, ProgressFn, VectorPage } from './types.js'
 import { detectKind } from './detect.js'
 import { findPdfConverter } from '../tools.js'
 import { run } from '../run.js'
@@ -38,7 +38,7 @@ export const pdfExtractor: Extractor = {
   async canHandle(file) {
     return (await detectKind(file)) === 'pdf'
   },
-  async extract(file, workdir) {
+  async extract(file, workdir, onProgress?: ProgressFn) {
     const conv = await findPdfConverter()
     if (!conv) {
       throw new Error('No PDF converter found. Install poppler (pdftocairo) or mupdf (mutool).')
@@ -56,6 +56,7 @@ export const pdfExtractor: Extractor = {
       }
       const svg = await readFile(svgPath, 'utf8')
       pages.push({ type: 'vector', svgPath, ...viewBox(svg) })
+      onProgress?.(i, count, 'Converting')
     }
 
     return {

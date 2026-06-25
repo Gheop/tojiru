@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import yauzl from 'yauzl'
-import type { Document, Extractor, RasterPage } from './types.js'
+import type { Document, Extractor, ProgressFn, RasterPage } from './types.js'
 import { detectKind } from './detect.js'
 import { isImage, naturalCompare, imageDims } from './images.js'
 
@@ -36,7 +36,7 @@ function extractAll(zip: yauzl.ZipFile, workdir: string): Promise<string[]> {
 export const cbzExtractor: Extractor = {
   name: 'cbz',
   async canHandle(file) { return (await detectKind(file)) === 'cbz' },
-  async extract(file, workdir) {
+  async extract(file, workdir, _onProgress?: ProgressFn) {
     await mkdir(workdir, { recursive: true })
     const zip = await openZip(file)
     const files = (await extractAll(zip, workdir)).sort((a, b) => naturalCompare(basename(a), basename(b)))
