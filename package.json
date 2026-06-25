@@ -20,8 +20,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@types/yauzl": "^3.4.0",
     "commander": "^12.1.0",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.4",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
