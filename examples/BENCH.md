@@ -1,35 +1,37 @@
-# Bench PDF — tojiru
+# Bench — tojiru
 
-Mesures effectuées le 2026-06-25.
-Commande : `npx tsx src/cli.ts <fichier> --out /tmp/bench-<nom> --force`
-Machine : Linux, 22 threads, Node 20+.
+Mesures du 2026-06-25. Commande : `tojiru <fichier> --out <dossier>`.
+Ratio = taille du bundle de sortie / taille du fichier d'entrée.
 
----
+## Résultats (5 formats + contre-exemples PDF)
 
-## Résultats
+| Échantillon | Format | Pages | Entrée | Bundle | Ratio |
+|---|---|---|---|---|---|
+| Les non-humains (Ploum) | PDF texte vectoriel — Type1 | 9 | 202 Ko | 186 Ko | **×0,92** |
+| Little Brother (Doctorow) | PDF texte vectoriel — TrueType | 134 | 1,9 Mo | 10,5 Mo | ×5,6 |
+| Pepper&Carrot ép.1 | PDF (BD raster) | 4 | 163 Ko | 5,5 Mo | ×33,9 |
+| NASA SP-4012 v2 | PDF scanné + OCR | 642 | 8,0 Mo | 80,7 Mo | ×10,1 |
+| Pepper&Carrot ép.1 | CBZ | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
+| Pepper&Carrot ép.1 | CB7 | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
+| The Fanscient #03 | CBR | 32 | 6,5 Mo | 7,1 Mo | ×1,08 |
+| Macaulay (essai) | DjVu | 163 | 2,6 Mo | 40,4 Mo | ×15,8 |
 
-| Fichier | Pages | Entrée | Bundle total | pages/*.svgz | thumbs/*.webp | Ratio | Temps |
-|---|---|---|---|---|---|---|---|
-| `peppercarrot_episode01.pdf` (raster comic, 4 pages) | 4 | 164 KB | 5 554 KB | 5 531 KB | 17 KB | ×33,9 | 3,2 s |
-| `generated-text.pdf` (texte vectoriel, 40 pages) | 40 | 8 KB | 89 KB | 59 KB | 20 KB | ×10,9 | 4,0 s |
+## Lecture
 
----
+**PDF texte vectoriel — le cas où tojiru brille.** Sur « Les non-humains » (polices Type1 intégrées), le bundle est *plus petit* que le PDF source (×0,92), avec un texte SVG net et scalable à l'infini. Sur Little Brother (TrueType), c'est ×5,6 : toujours du vrai vectoriel, rendu impeccable, mais plus lourd. La différence vient de l'encodage des polices : pour du Type1, `pdftocairo` réutilise chaque glyphe via `<symbol>`/`<use>` ; pour du TrueType, il émet un `<path>` par occurrence de glyphe. Le rendu est identique, c'est le poids qui change.
 
-## Formats non encore benchmarkés
+**Archives BD (CBZ/CB7/CBR) — bundle ≈ entrée.** Les pages sont déjà des images : tojiru les copie et ajoute des miniatures. Pas de gonflement (×1,06 à ×1,08).
 
-| Fichier | Format | Taille entrée | Statut |
-|---|---|---|---|
-| `peppercarrot_episode01.cbz` | CBZ | 1 136 KB | extracteur à venir |
-| `peppercarrot_episode01.cb7` | CB7 | 1 055 KB | extracteur à venir |
-| `TheFanscient03V02n011948Spring.cbr` | CBR | 6 700 KB | extracteur à venir |
-| `macaulayssecond00macagoog.djvu` | DjVu | 2 616 KB | extracteur à venir |
+**PDF raster ou scanné — la limite.** Quand les pages d'un PDF sont des images (BD raster ×33,9 ; scan NASA ×10,1), `pdftocairo` enrobe chaque image dans du SVG, ce qui pèse plus que l'image d'origine. Le NASA SP-4012 illustre le piège : il a une couche OCR (texte extractible) mais l'affichage est un scan, donc il est traité comme du raster. tojiru n'est pas fait pour du scanné ; il est fait pour du texte vectoriel.
 
----
+**DjVu ×15,8 — piste d'amélioration connue.** Le DjVu est très compressé (ondelettes). L'extracteur rend chaque page via `ddjvu` en PNG lossless, qui gonfle. Sortir les pages en WebP (q≈85) ramènerait le ratio autour de ×1,5. Non implémenté pour l'instant.
 
-## Observations
+## Méthode
 
-Le cas raster comic (Pepper&Carrot) produit un bundle **34 fois plus lourd** que l'entrée. L'explication est directe : le PDF source est une recompression JPEG déjà lossy, que pdftocairo redessine page par page avant de produire des SVG encapsulant des bitmaps, eux-mêmes compressés en gzip (`.svgz`). Un SVG de page pleine couleur haute résolution pèse naturellement plus qu'un JPEG équivalent.
+Bench réel via le CLI sur le corpus de `fetch-samples.sh`. Pour reproduire :
 
-Le cas texte vectoriel (fixture générée) produit un ratio ×11, mais le fichier source est artificiel (8 KB pour 40 pages) : chaque page ne contient qu'une ligne de texte, ce qui gonfle le ratio mécaniquement.
-
-En usage réel, un PDF texte de 40 pages bien rempli devrait produire un ratio plus proche de ×2 à ×5. Ces chiffres sont à prendre comme valeurs de référence, pas comme indicateur de performance cible.
+```bash
+bash examples/fetch-samples.sh
+tojiru examples/samples/<fichier> --out /tmp/bench --force
+du -sh /tmp/bench
+```

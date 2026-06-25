@@ -3,12 +3,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { detectKind } from './extractors/detect.js'
 import { pdfExtractor } from './extractors/pdf.js'
+import { cbzExtractor } from './extractors/cbz.js'
+import { cb7Extractor } from './extractors/cb7.js'
+import { cbrExtractor } from './extractors/cbr.js'
+import { djvuExtractor } from './extractors/djvu.js'
 import { processPages } from './pages.js'
 import { buildManifest } from './manifest.js'
 import { writeFolder } from './output/folder.js'
 import type { Extractor } from './extractors/types.js'
 
-const EXTRACTORS: Extractor[] = [pdfExtractor]
+const EXTRACTORS: Extractor[] = [pdfExtractor, cbzExtractor, cb7Extractor, cbrExtractor, djvuExtractor]
 
 export interface ConvertOptions {
   outDir: string
