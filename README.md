@@ -110,6 +110,11 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.1.1 — Scoped package name (2026-06-25)
+
+- Published on npm as `@gheop/tojiru` (the unscoped `tojiru` name was taken); the installed command is still `tojiru`
+- README install instructions corrected to the scoped name
+
 ### v0.1.0 — Initial release (2026-06-25)
 
 - PDF → vector SVG pages; CBZ/CB7/CBR/DjVu → image pages
