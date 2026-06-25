@@ -11,13 +11,13 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-cli-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('le PDF généré est bien détecté comme pdf', async () => {
+test('the generated PDF is correctly detected as pdf', async () => {
   const pdf = join(dir, 'livre.pdf')
   await makePdf(pdf, 3)
   expect(await detectKind(pdf)).toBe('pdf')
 })
 
-test('le pipeline complet produit un bundle lisible', async (ctx) => {
+test('the full pipeline produces a readable bundle', async (ctx) => {
   if (!(await findPdfConverter())) ctx.skip()
   const pdf = join(dir, 'livre2.pdf')
   await makePdf(pdf, 2)

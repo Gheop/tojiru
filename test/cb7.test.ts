@@ -10,7 +10,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-cb7-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un CB7 en pages raster', async (ctx) => {
+test('extracts a CB7 into raster pages', async (ctx) => {
   if (!(await hasBinary('7z'))) ctx.skip()
   const cb7 = join(dir, 'bd.cb7')
   await makeComic('7z', cb7, 3)

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import sharp from 'sharp'
 import { run } from '../../src/run.js'
 
-// Construit un .djvu de N pages : sharp -> jpeg -> c44 -> djvu mono-page -> djvm combine.
+// Builds an N-page .djvu: sharp -> jpeg -> c44 -> single-page djvu -> djvm combine.
 export async function makeDjvu(out: string, pages: number): Promise<void> {
   const work = await mkdtemp(join(tmpdir(), 'tojiru-mkdjvu-'))
   try {

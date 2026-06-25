@@ -10,7 +10,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-pages-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('produit un .svgz et une miniature .webp par page vector', async () => {
+test('produces a .svgz and a .webp thumbnail per vector page', async () => {
   const svgPath = join(dir, 'src.svg')
   writeFileSync(svgPath, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><rect width="100" height="200" fill="#333"/></svg>')
   const out = join(dir, 'out')
@@ -24,7 +24,7 @@ test('produit un .svgz et une miniature .webp par page vector', async () => {
   expect(processed[0].w).toBe(100)
   expect(existsSync(join(out, 'pages/0001.svgz'))).toBe(true)
   expect(existsSync(join(out, 'thumbs/0001.webp'))).toBe(true)
-  // le .svgz se décompresse bien en SVG
+  // the .svgz decompresses correctly to SVG
   const svg = gunzipSync(readFileSync(join(out, 'pages/0001.svgz'))).toString('utf8')
   expect(svg).toContain('<svg')
 })

@@ -9,20 +9,20 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-img-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('isImage reconnaît les extensions image, rejette le reste', () => {
+test('isImage recognises image extensions and rejects the rest', () => {
   expect(isImage('p01.JPG')).toBe(true)
   expect(isImage('a.png')).toBe(true)
   expect(isImage('ComicInfo.xml')).toBe(false)
   expect(isImage('Thumbs.db')).toBe(false)
 })
 
-test('naturalCompare trie page2 avant page10', () => {
+test('naturalCompare sorts page2 before page10', () => {
   const a = ['page10.jpg', 'page2.jpg', 'page1.jpg']
   a.sort(naturalCompare)
   expect(a).toEqual(['page1.jpg', 'page2.jpg', 'page10.jpg'])
 })
 
-test('imageDims lit les dimensions en pixels', async () => {
+test('imageDims reads pixel dimensions', async () => {
   const p = join(dir, 'x.png')
   await sharp({ create: { width: 120, height: 80, channels: 3, background: '#fff' } }).png().toFile(p)
   expect(await imageDims(p)).toEqual({ w: 120, h: 80 })

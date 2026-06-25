@@ -9,7 +9,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-folder-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('écrit manifest.json et copie les fichiers du lecteur', async () => {
+test('writes manifest.json and copies the reader files', async () => {
   const m: Manifest = { tojiru: 1, title: 'X', kind: 'pdf', pageCount: 0, pages: [] }
   await writeFolder(m, dir)
   expect(existsSync(join(dir, 'manifest.json'))).toBe(true)

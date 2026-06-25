@@ -1,7 +1,7 @@
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 import { writeFile } from 'node:fs/promises'
 
-// Génère un PDF de N pages, sans aucun binaire système, pour les tests.
+// Generates an N-page PDF with no system binaries, for tests.
 export async function makePdf(path: string, pages: number): Promise<void> {
   const doc = await PDFDocument.create()
   const font = await doc.embedFont(StandardFonts.Helvetica)

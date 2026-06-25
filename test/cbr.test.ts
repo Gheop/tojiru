@@ -9,7 +9,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-cbr-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un CBR en pages raster', async (ctx) => {
+test('extracts a CBR into raster pages', async (ctx) => {
   if (!existsSync(FIXTURE)) ctx.skip()
   const work = mkdtempSync(join(tmpdir(), 'tojiru-cbrwork-'))
   const doc = await cbrExtractor.extract(FIXTURE, work)

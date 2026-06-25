@@ -10,7 +10,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-djvu-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un DjVu en pages raster affichables', async (ctx) => {
+test('extracts a DjVu into browser-displayable raster pages', async (ctx) => {
   if (!(await hasBinary('ddjvu')) || !(await hasBinary('c44'))) ctx.skip()
   const dj = join(dir, 'book.djvu')
   await makeDjvu(dj, 2)
@@ -19,7 +19,7 @@ test('extrait un DjVu en pages raster affichables', async (ctx) => {
   expect(doc.kind).toBe('djvu')
   expect(doc.pages).toHaveLength(2)
   expect(doc.pages[0].type).toBe('raster')
-  expect(doc.pages[0].imagePath).toMatch(/\.webp$/)  // affichable navigateur
+  expect(doc.pages[0].imagePath).toMatch(/\.webp$/)  // browser-displayable format
   expect(doc.pages[0].w).toBeGreaterThan(0)
   rmSync(work, { recursive: true, force: true })
 })

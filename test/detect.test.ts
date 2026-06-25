@@ -14,17 +14,17 @@ function fixture(name: string, bytes: number[]): string {
   return p
 }
 
-test('détecte un PDF par magic bytes même avec une mauvaise extension', async () => {
+test('detects a PDF by magic bytes even with the wrong extension', async () => {
   const p = fixture('faux.cbz', [0x25, 0x50, 0x44, 0x46, 0x2d]) // %PDF-
   expect(await detectKind(p)).toBe('pdf')
 })
 
-test('détecte un zip (cbz) par signature PK', async () => {
+test('detects a zip (cbz) by PK signature', async () => {
   const p = fixture('bd.cbz', [0x50, 0x4b, 0x03, 0x04])
   expect(await detectKind(p)).toBe('cbz')
 })
 
-test('rend null pour un contenu inconnu', async () => {
+test('returns null for unknown content', async () => {
   const p = fixture('mystere.bin', [0x00, 0x01, 0x02, 0x03])
   expect(await detectKind(p)).toBeNull()
 })

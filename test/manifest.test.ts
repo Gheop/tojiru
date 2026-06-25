@@ -2,7 +2,7 @@ import { test, expect } from 'vitest'
 import { buildManifest } from '../src/manifest.js'
 import type { ProcessedPage } from '../src/pages.js'
 
-test('assemble un manifeste versionné avec le compte de pages', () => {
+test('assembles a versioned manifest with the page count', () => {
   const pages: ProcessedPage[] = [
     { n: 1, type: 'vector', w: 100, h: 200, file: 'pages/0001.svgz', thumb: 'thumbs/0001.webp' },
   ]

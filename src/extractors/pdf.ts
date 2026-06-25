@@ -10,13 +10,13 @@ function pad(n: number, width: number): string {
 }
 
 async function pageCount(file: string): Promise<number> {
-  // pdfinfo fait partie de poppler ; repli sur mutool si absent.
+  // pdfinfo is part of poppler; fall back to mutool if absent.
   try {
     const { stdout } = await run('pdfinfo', [file])
     const m = stdout.match(/^Pages:\s+(\d+)/m)
     if (m) return Number(m[1])
   } catch {
-    /* tente mutool ci-dessous */
+    /* try mutool below */
   }
   const { stdout } = await run('mutool', ['info', file])
   const m = stdout.match(/Pages:\s+(\d+)/)

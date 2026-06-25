@@ -12,7 +12,7 @@ export const cb7Extractor: Extractor = {
   async extract(file, workdir) {
     if (!(await hasBinary('7z'))) throw new Error('7z not found. Install p7zip (package p7zip / p7zip-full).')
     await mkdir(workdir, { recursive: true })
-    // -y : oui à tout ; e : extraire sans arborescence ; -o : dossier de sortie
+    // -y: yes to all; e: extract flat (no directory structure); -o: output folder
     await run('7z', ['e', '-y', `-o${workdir}`, file])
     const files = (await readdir(workdir)).filter(isImage).sort(naturalCompare).map((n) => join(workdir, n))
     if (files.length === 0) throw new Error('No images found in the CB7')

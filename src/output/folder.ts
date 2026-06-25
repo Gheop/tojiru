@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import type { Manifest } from '../manifest.js'
 
-// reader/ est à la racine du paquet. Depuis dist/output/ comme depuis src/output/,
-// on remonte de deux niveaux.
+// reader/ is at the package root. Whether running from dist/output/ or src/output/,
+// we go up two levels.
 export function readerDir(): string {
   return fileURLToPath(new URL('../../reader/', import.meta.url))
 }

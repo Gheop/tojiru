@@ -1,6 +1,6 @@
-/* Reproduit l'aspect du lecteur d'origine (gheop, 2009) :
-   colonne de miniatures à gauche, pages centrales avec bordure argent + ombre,
-   pages/vignettes atténuées en opacité, la page courante en pleine opacité. */
+/* Reproduces the look of the original reader (gheop, 2009):
+   thumbnail column on the left, centered pages with a silver border and shadow,
+   pages/thumbnails dimmed in opacity, the current page at full opacity. */
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
@@ -50,7 +50,7 @@ body { font-family: verdana, sans-serif; background: #fff; }
 }
 .page.select object, .page.select img { opacity: 1; border-color: #777; }
 
-/* Barres de défilement fines, masquées tant qu'on ne survole pas. */
+/* Thin scrollbars, hidden until hovered. */
 #menu, #page { scrollbar-width: thin; scrollbar-color: transparent transparent; }
 #menu:hover, #page:hover { scrollbar-color: #c4c4c4 transparent; }
 #menu::-webkit-scrollbar, #page::-webkit-scrollbar { width: 7px; }

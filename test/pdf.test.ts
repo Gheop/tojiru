@@ -10,7 +10,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-pdf-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un Document vector avec une page par page du PDF', async (ctx) => {
+test('extracts a vector Document with one page per PDF page', async (ctx) => {
   if (!(await findPdfConverter())) ctx.skip()
   const pdf = join(dir, 'deux.pdf')
   await makePdf(pdf, 2)

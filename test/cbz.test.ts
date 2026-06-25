@@ -9,7 +9,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-cbz-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un CBZ en pages raster triées avec dimensions', async () => {
+test('extracts a CBZ into sorted raster pages with dimensions', async () => {
   const cbz = join(dir, 'bd.cbz')
   await makeComic('zip', cbz, 3)
   const work = mkdtempSync(join(tmpdir(), 'tojiru-cbzwork-'))
@@ -22,7 +22,7 @@ test('extrait un CBZ en pages raster triées avec dimensions', async () => {
   rmSync(work, { recursive: true, force: true })
 })
 
-test('extrait un CBZ dont les entrées ont un slash initial', async () => {
+test('extracts a CBZ whose entries have a leading slash', async () => {
   const fixture = new URL('./fixtures/leading-slash.cbz', import.meta.url).pathname
   const work = mkdtempSync(join(tmpdir(), 'tojiru-cbzslash-'))
   try {

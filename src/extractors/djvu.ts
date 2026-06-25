@@ -30,8 +30,8 @@ export const djvuExtractor: Extractor = {
       const tiff = join(workdir, `${stem}.tiff`)
       const webp = join(workdir, `${stem}.webp`)
       await run('ddjvu', ['-format=tiff', `-page=${i}`, file, tiff])
-      // Scans DjVu = souvent bilevel/texte : WebP lossless (≈50% du PNG) plutôt que lossy,
-      // qui gonfle et dégrade les bords de texte sur du bi-tonal.
+      // DjVu scans are often bilevel/text: WebP lossless (≈50% of PNG) rather than lossy,
+      // which bloats and degrades text edges on bitonal content.
       await sharp(tiff).webp({ lossless: true, effort: 6 }).toFile(webp)
       pages.push({ type: 'raster', imagePath: webp, ...(await imageDims(webp)) })
     }

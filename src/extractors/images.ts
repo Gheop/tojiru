@@ -6,7 +6,7 @@ export function isImage(name: string): boolean {
   return IMAGE_RE.test(name)
 }
 
-// Tri naturel : compare les segments numériques par valeur, le reste lexicalement.
+// Natural sort: compares numeric segments by value, the rest lexicographically.
 export function naturalCompare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
 }

@@ -13,7 +13,7 @@ function openZip(file: string): Promise<yauzl.ZipFile> {
   })
 }
 
-// Extrait toutes les entrées image vers workdir (noms aplatis), renvoie les chemins.
+// Extracts all image entries to workdir (flattened names), returns the paths.
 function extractAll(zip: yauzl.ZipFile, workdir: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const out: string[] = []
