@@ -1,7 +1,7 @@
 {
   "name": "tojiru",
   "version": "0.1.0",
-  "description": "Transforme un document à pages fixes en lecteur web statique",
+  "description": "Turn a fixed-page document (PDF, comic, DjVu) into a static web reader",
   "type": "module",
   "bin": {
     "tojiru": "dist/cli.js"
@@ -20,7 +20,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@types/yauzl": "^3.4.0",
     "commander": "^12.1.0",
     "node-unrar-js": "^2.0.2",
     "sharp": "^0.33.4",
@@ -29,6 +28,7 @@
   "devDependencies": {
     "@playwright/test": "^1.45.0",
     "@types/node": "^20.14.0",
+    "@types/yauzl": "^3.4.0",
     "http-server": "^14.1.1",
     "pdf-lib": "^1.17.1",
     "tsx": "^4.16.0",
