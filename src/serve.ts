@@ -69,6 +69,8 @@ export async function serve(dir: string, port = 8000): Promise<{ url: string; cl
           currentPort++
           server.removeAllListeners()
           tryListen()
+        } else if (err.code === 'EADDRINUSE') {
+          rejectFn(new Error('No free port found in 8000–8020'))
         } else {
           rejectFn(err)
         }
