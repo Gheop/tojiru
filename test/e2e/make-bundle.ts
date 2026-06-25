@@ -7,7 +7,16 @@ import { writeFolder } from '../../src/output/folder.js'
 import type { Document } from '../../src/extractors/types.js'
 
 function svg(label: string): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><rect width="200" height="300" fill="#fff"/><text x="20" y="60" font-size="24">${label}</text></svg>`
+  // Both pages define <g id="ink"> with different text and reference it via <use>.
+  // With inline SVG injection, both pages share the same DOM so the second page's
+  // <use xlink:href="#ink"> resolves to page 1's <g id="ink"> (garbled text).
+  // With <object> isolation each page is its own document, so #ink resolves locally.
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 300">
+  <rect width="200" height="300" fill="#fff"/>
+  <defs><g id="ink"><text x="20" y="50" font-size="24">${label}</text></g></defs>
+  <use xlink:href="#ink"/>
+</svg>`
 }
 
 export async function makeBundle(outDir: string): Promise<void> {
