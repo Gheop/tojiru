@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { makePdf } from './helpers/fixtures.js'
 import { detectKind } from '../src/extractors/detect.js'
 import { findPdfConverter } from '../src/tools.js'
+import { convert } from '../src/convert.js'
 
 let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-cli-')) })
@@ -16,16 +17,12 @@ test('le PDF généré est bien détecté comme pdf', async () => {
   expect(await detectKind(pdf)).toBe('pdf')
 })
 
-test('le pipeline complet produit un bundle lisible', async () => {
-  if (!(await findPdfConverter())) {
-    console.warn('Aucun convertisseur PDF, test sauté')
-    return
-  }
-  const { convertForTest } = await import('./helpers/convert.js')
+test('le pipeline complet produit un bundle lisible', async (ctx) => {
+  if (!(await findPdfConverter())) ctx.skip()
   const pdf = join(dir, 'livre2.pdf')
   await makePdf(pdf, 2)
   const out = join(dir, 'bundle')
-  await convertForTest(pdf, out)
+  await convert(pdf, { outDir: out })
   expect(existsSync(join(out, 'manifest.json'))).toBe(true)
   expect(existsSync(join(out, 'pages/0001.svgz'))).toBe(true)
   expect(existsSync(join(out, 'index.html'))).toBe(true)

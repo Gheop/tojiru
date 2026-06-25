@@ -10,11 +10,8 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-pdf-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('extrait un Document vector avec une page par page du PDF', async () => {
-  if (!(await findPdfConverter())) {
-    console.warn('Aucun convertisseur PDF, test sauté')
-    return
-  }
+test('extrait un Document vector avec une page par page du PDF', async (ctx) => {
+  if (!(await findPdfConverter())) ctx.skip()
   const pdf = join(dir, 'deux.pdf')
   await makePdf(pdf, 2)
   const work = mkdtempSync(join(tmpdir(), 'tojiru-work-'))
