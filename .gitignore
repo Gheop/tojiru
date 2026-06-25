@@ -4,14 +4,8 @@ dist/
 .DS_Store
 /tmp/
 test-output/
-
-# artefact de smoke-test CLI
-test/helpers/sample.pdf
 test-results/
 playwright-report/
 
-# workspace interne sdd (briefs, rapports, ledger)
-.superpowers/
-
-# docs de conception internes (non publiés)
-/docs/superpowers/
+# generated CLI smoke-test artifact
+test/helpers/sample.pdf
