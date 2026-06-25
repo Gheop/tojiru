@@ -1,55 +1,52 @@
 # Corpus d'exemples — tojiru
 
-Ce dossier contient les scripts pour reproduire le corpus de test. Les fichiers binaires eux-mêmes ne sont pas versionnés (`samples/` est dans `.gitignore`).
-
-Pour télécharger le corpus :
+Scripts et provenance du corpus de test. Les binaires ne sont pas versionnés (`samples/` est dans `.gitignore`). Pour les récupérer :
 
 ```bash
 bash examples/fetch-samples.sh
 ```
 
----
+Le corpus couvre les 5 formats supportés, plus quelques contre-exemples qui montrent quand tojiru gonfle (PDF raster/scanné). Les mesures sont dans [BENCH.md](BENCH.md).
 
 ## Fichiers
 
-| Fichier | Format | Source | Taille |
-|---|---|---|---|
-| `peppercarrot_episode01.pdf` | PDF (raster, comic) | archive.org · peppercarrot-en | 164 KB |
-| `peppercarrot_episode01.cbz` | CBZ | archive.org · peppercarrot-en | 1,1 MB |
-| `peppercarrot_episode01.cb7` | CB7 (généré) | Repackaging du CBZ ci-dessus | 1,1 MB |
-| `TheFanscient03V02n011948Spring.cbr` | CBR | archive.org · TheFanscient03V02n011948Spring | 6,6 MB |
-| `macaulayssecond00macagoog.djvu` | DjVu | archive.org · macaulayssecond00macagoog | 2,6 MB |
-| `generated-text.pdf` | PDF (texte vectoriel, fixture) | Généré par `test/helpers/fixtures.ts` | 8 KB |
-
----
+| Fichier | Format | Profil | Source | Licence |
+|---|---|---|---|---|
+| `littlebrother_doctorow.pdf` | PDF | texte vectoriel (anglais) | craphound.com | CC BY-NC-SA |
+| `les-non-humains_ploum.pdf` | PDF | texte vectoriel (français, compact) | ploum.net | CC BY-SA |
+| `peppercarrot_episode01.pdf` | PDF | BD raster | archive.org · peppercarrot-en | CC BY 4.0 |
+| `nasa-sp-4012v2.pdf` | PDF | scanné + OCR (contre-exemple) | nasa.gov | domaine public (gouv. US) |
+| `peppercarrot_episode01.cbz` | CBZ | BD | archive.org · peppercarrot-en | CC BY 4.0 |
+| `peppercarrot_episode01.cb7` | CB7 | BD (repackagé) | repackaging du CBZ | CC BY 4.0 |
+| `TheFanscient03V02n011948Spring.cbr` | CBR | BD | archive.org | domaine public US (voir ci-dessous) |
+| `macaulayssecond00macagoog.djvu` | DjVu | livre scanné | archive.org | domaine public mondial |
 
 ## Licence / juridiction
 
 ### Pepper&Carrot épisode 1 (PDF, CBZ, CB7)
-
-- **Licence :** Creative Commons Attribution 4.0 International (CC-BY 4.0)
-- **Auteur :** David Revoy — [peppercarrot.com](https://www.peppercarrot.com)
+- **Licence :** CC BY 4.0. **Auteur :** David Revoy — [peppercarrot.com](https://www.peppercarrot.com)
 - **Source :** [archive.org/details/peppercarrot-en](https://archive.org/details/peppercarrot-en)
-- **Juridiction :** Libre dans toutes les juridictions. Attribution obligatoire.
+- Libre dans toutes les juridictions, attribution obligatoire.
 
-### The Fanscient #03 v02n01 (1948-Spring) — CBR
+### Little Brother — Cory Doctorow (PDF texte, anglais)
+- **Licence :** CC BY-NC-SA. **Clause NC :** usage non commercial uniquement.
+- **Source :** [craphound.com/littlebrother](https://craphound.com/littlebrother/download/)
+- Redistribuable avec attribution et partage à l'identique, hors usage commercial.
 
-- **Identifiant archive.org :** `TheFanscient03V02n011948Spring`
-- **Source :** [archive.org/details/TheFanscient03V02n011948Spring](https://archive.org/details/TheFanscient03V02n011948Spring)
-- **Statut aux États-Unis :** Fanzine de science-fiction de 1948. Aucun renouvellement de copyright enregistré → domaine public américain (Loi Sonny Bono : œuvres publiées avant 1978 non renouvelées).
-- **Statut EU/FR :** Incertain. La durée de protection dépend du droit moral et des règles de pays d'origine. En France, la durée standard est vie de l'auteur + 70 ans. L'auteur n'est pas identifié dans les métadonnées. **À ne pas redistribuer commercialement hors des États-Unis sans vérification.**
-- **Usage dans ce corpus :** uniquement à des fins de test technique, non redistribué.
+### Les non-humains — Ploum (PDF texte, français)
+- **Licence :** CC BY-SA. **Auteur :** Ploum (Lionel Dricot) — [ploum.net/212-les-nons-humains](https://ploum.net/212-les-nons-humains/)
+- Publié en HTML sur le blog de l'auteur ; le PDF de ce corpus est un rendu typographié. Non récupérable automatiquement.
+
+### NASA SP-4012 v2 (PDF, contre-exemple)
+- **Source :** [nasa.gov · sp-4012v2.pdf](https://www.nasa.gov/wp-content/uploads/2023/04/sp-4012v2.pdf)
+- **Statut :** domaine public (œuvre du gouvernement US, 17 USC §105).
+- **Pourquoi ici :** c'est un **scan + couche OCR**, pas du texte né numérique. Les pages sont des images, donc tojiru les traite comme du raster (voir BENCH.md). Sert à montrer la limite du modèle SVG sur du scanné.
+
+### The Fanscient #03 (1948) — CBR
+- **Identifiant :** `TheFanscient03V02n011948Spring` — [archive.org](https://archive.org/details/TheFanscient03V02n011948Spring)
+- **États-Unis :** fanzine de 1948, sans renouvellement de copyright → domaine public américain.
+- **EU/FR :** incertain (durée = vie de l'auteur + 70 ans ; auteur non identifié). **À ne pas redistribuer commercialement hors des États-Unis sans vérification.** Ici, usage de test technique uniquement.
 
 ### Macaulay's second essay on the Earl of Chatham (1891) — DjVu
-
-- **Identifiant archive.org :** `macaulayssecond00macagoog`
-- **Source :** [archive.org/details/macaulayssecond00macagoog](https://archive.org/details/macaulayssecond00macagoog)
-- **Auteur :** Thomas Babington Macaulay (1800–1859)
-- **Date de publication :** 1891 (édition posthume)
-- **Statut :** Domaine public mondial. L'auteur est décédé depuis plus de 70 ans (mort en 1859 → PD depuis 1930 au plus tard dans toutes les juridictions).
-
-### generated-text.pdf — PDF texte vectoriel (fixture)
-
-- **Source :** Généré par `test/helpers/fixtures.ts` via `pdf-lib`
-- **Statut :** Créé pour ce projet, aucune restriction.
-- **Contenu :** 40 pages numérotées, texte Helvetica sur fond blanc, sans contenu tiers.
+- **Identifiant :** `macaulayssecond00macagoog` — [archive.org](https://archive.org/details/macaulayssecond00macagoog)
+- **Auteur :** Thomas Babington Macaulay (1800–1859). **Statut :** domaine public mondial (auteur mort depuis plus de 70 ans).
