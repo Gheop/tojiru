@@ -32,7 +32,7 @@ function init(manifest) {
   const menu = $('#menu')
   const pagesEl = $('#pages')
   const key = `tojiru:${manifest.title}`
-  let current = 1
+  let current = 0
 
   const thumbs = manifest.pages.map((p) => {
     const t = document.createElement('img')
