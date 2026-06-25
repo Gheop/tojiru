@@ -49,3 +49,10 @@ body { font-family: verdana, sans-serif; background: #fff; }
   background: #fff; opacity: .7; transition: opacity .25s ease;
 }
 .page.select object, .page.select img { opacity: 1; border-color: #777; }
+
+/* Barres de défilement fines, masquées tant qu'on ne survole pas. */
+#menu, #page { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+#menu:hover, #page:hover { scrollbar-color: #c4c4c4 transparent; }
+#menu::-webkit-scrollbar, #page::-webkit-scrollbar { width: 7px; }
+#menu::-webkit-scrollbar-thumb, #page::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+#menu:hover::-webkit-scrollbar-thumb, #page:hover::-webkit-scrollbar-thumb { background: #c4c4c4; }
