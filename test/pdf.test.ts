@@ -3,8 +3,14 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { makePdf } from './helpers/fixtures.js'
-import { pdfExtractor } from '../src/extractors/pdf.js'
+import { pdfExtractor, roundCoords } from '../src/extractors/pdf.js'
 import { findPdfConverter } from '../src/tools.js'
+
+test('roundCoords rounds floats with ≥3 decimals, leaves integers and short floats untouched', () => {
+  const input = '<svg x="1.23456" y="10" z="3.14"/>'
+  const out = roundCoords(input)
+  expect(out).toBe('<svg x="1.23" y="10" z="3.14"/>')
+})
 
 let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-pdf-')) })

@@ -1,9 +1,10 @@
-import { readFile } from 'node:fs/promises'
+import { readFile, unlink, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
-import type { Document, Extractor, ProgressFn, VectorPage } from './types.js'
+import type { Document, Extractor, Page, ProgressFn } from './types.js'
 import { detectKind } from './detect.js'
 import { findPdfConverter } from '../tools.js'
 import { run } from '../run.js'
+import { imageDims } from './images.js'
 
 function pad(n: number, width: number): string {
   return String(n).padStart(width, '0')
@@ -33,6 +34,21 @@ function viewBox(svg: string): { w: number; h: number } {
   throw new Error('SVG has no usable dimensions')
 }
 
+// Rounds floats with ≥3 decimal places to `decimals` places.
+// Integers and short floats (≤2 decimals) are unchanged.
+// Safe for glyph outlines and <use> positions at 2 decimals (0.01 pt precision).
+export function roundCoords(svg: string, decimals = 2): string {
+  return svg.replace(/-?\d+\.\d{3,}/g, (m) => String(Number(parseFloat(m).toFixed(decimals))))
+}
+
+// A page is raster-dominated when pdftocairo wrapped a full-page bitmap in SVG:
+// at least one <image> element and fewer than 50 <use> elements (vector glyphs).
+function isRasterDominated(svg: string): boolean {
+  const imageCount = (svg.match(/<image/g) ?? []).length
+  const useCount = (svg.match(/<use/g) ?? []).length
+  return imageCount >= 1 && useCount < 50
+}
+
 export const pdfExtractor: Extractor = {
   name: 'pdf',
   async canHandle(file) {
@@ -45,17 +61,32 @@ export const pdfExtractor: Extractor = {
     }
     const count = await pageCount(file)
     const width = Math.max(4, String(count).length)
-    const pages: VectorPage[] = []
+    const pages: Page[] = []
 
     for (let i = 1; i <= count; i++) {
-      const svgPath = join(workdir, `${pad(i, width)}.svg`)
+      const stem = pad(i, width)
+      const svgPath = join(workdir, `${stem}.svg`)
       if (conv === 'pdftocairo') {
         await run('pdftocairo', ['-svg', '-f', String(i), '-l', String(i), file, svgPath])
       } else {
         await run('mutool', ['draw', '-F', 'svg', '-o', svgPath, file, String(i)])
       }
       const svg = await readFile(svgPath, 'utf8')
-      pages.push({ type: 'vector', svgPath, ...viewBox(svg) })
+
+      if (conv === 'pdftocairo' && isRasterDominated(svg)) {
+        // Full-page bitmap wrapped in SVG: re-render directly to PNG and drop the SVG.
+        const pngStem = join(workdir, stem)
+        await run('pdftocairo', ['-png', '-singlefile', '-r', '150', '-f', String(i), '-l', String(i), file, pngStem])
+        const pngPath = `${pngStem}.png`
+        await unlink(svgPath)
+        pages.push({ type: 'raster', imagePath: pngPath, ...(await imageDims(pngPath)) })
+      } else {
+        // Vector page: round coordinates to shrink SVG, then store.
+        const rounded = roundCoords(svg)
+        await writeFile(svgPath, rounded, 'utf8')
+        pages.push({ type: 'vector', svgPath, ...viewBox(rounded) })
+      }
+
       onProgress?.(i, count, 'Converting')
     }
 
