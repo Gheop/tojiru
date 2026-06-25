@@ -66,13 +66,32 @@ sudo dnf install poppler-utils djvulibre p7zip
 
 ```bash
 tojiru <input> [options]
+tojiru serve <dir> [options]
 ```
+
+Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
+
+### Convert options
 
 | Option | Description |
 |---|---|
 | `-o, --out <dir>` | Output folder (default: the input name without extension) |
 | `-t, --title <title>` | Document title shown in the reader |
 | `-f, --force` | Overwrite a non-empty output folder |
+| `--serve` | Start a preview server on the output folder after converting |
+
+### Preview server
+
+```bash
+tojiru serve out/         # serve an existing bundle
+tojiru serve out/ -p 9000 # on a custom port
+```
+
+| Option | Description |
+|---|---|
+| `-p, --port <n>` | Port to listen on (default: 8000; auto-increments on EADDRINUSE) |
+
+The server uses Node built-ins only — no extra dependencies. It opens the browser automatically (best-effort).
 
 Examples:
 
@@ -80,9 +99,14 @@ Examples:
 tojiru novel.pdf --out reader/ --title "My Novel"
 tojiru comic.cbz --out comic/
 tojiru scan.djvu --out book/ --force
-```
 
-Then serve the folder with any static server (`npx http-server reader/`) or open `index.html`.
+# preview immediately after converting
+tojiru novel.pdf --out reader/ --serve
+
+# or convert first, serve later
+tojiru novel.pdf --out reader/
+tojiru serve reader/
+```
 
 ## Where it shines (and where it doesn't)
 
@@ -109,6 +133,13 @@ npm run dev -- <input> --out <dir>   # run the CLI from source via tsx
 MIT — see [LICENSE](LICENSE).
 
 ## Changelog
+
+### v0.2.0 — Preview server and progress (2026-06-25)
+
+- Built-in `tojiru serve <dir>` command previews a bundle locally — uses Node built-ins only, no extra install needed
+- `--serve` flag on the convert command starts the server immediately after generating
+- Per-page progress shown on stderr during generation (`Converting i/N`, `Processing i/N`)
+- Browser opens automatically after `serve` / `--serve` (best-effort, swallows errors)
 
 ### v0.1.2 — Version reporting (2026-06-25)
 
