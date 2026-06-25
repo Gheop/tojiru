@@ -13,14 +13,30 @@
   <div class="sky">
     <div class="stars"></div>
     <svg class="moon" viewBox="0 0 100 100" aria-hidden="true"><path d="M62 8a44 44 0 1 0 30 76A52 52 0 0 1 62 8Z"/></svg>
-    <svg class="lantern" viewBox="0 0 120 200" aria-hidden="true">
-      <rect x="46" y="4" width="28" height="6" rx="3" class="lan-frame"/>
-      <line x1="60" y1="10" x2="60" y2="24" class="lan-frame"/>
-      <rect x="30" y="24" width="60" height="120" rx="8" class="lan-glow"/>
-      <rect x="30" y="24" width="60" height="120" rx="8" class="lan-frame" fill="none"/>
-      <line x1="30" y1="64" x2="90" y2="64" class="lan-frame"/>
-      <line x1="30" y1="104" x2="90" y2="104" class="lan-frame"/>
-      <rect x="44" y="144" width="32" height="10" rx="3" class="lan-frame"/>
+    <svg class="lantern" viewBox="0 0 160 220" aria-hidden="true">
+      <defs>
+        <radialGradient id="halo" cx="50%" cy="44%" r="50%">
+          <stop offset="0%" stop-color="#ffd98a" stop-opacity=".6"/>
+          <stop offset="55%" stop-color="#e7a23c" stop-opacity=".18"/>
+          <stop offset="100%" stop-color="#e7a23c" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f3bd55"/>
+          <stop offset="48%" stop-color="#ffe1a0"/>
+          <stop offset="100%" stop-color="#eeae47"/>
+        </linearGradient>
+      </defs>
+      <circle cx="80" cy="100" r="90" fill="url(#halo)"/>
+      <line x1="80" y1="8" x2="80" y2="30" class="lan-cord"/>
+      <ellipse cx="80" cy="33" rx="11" ry="4" class="lan-cap"/>
+      <path d="M58 38 Q80 31 102 38 Q112 80 102 162 Q80 170 58 162 Q48 80 58 38 Z" fill="url(#paper)" class="lan-body"/>
+      <g class="lan-rib" fill="none">
+        <path d="M57 62 Q80 67 103 62"/>
+        <path d="M53 88 Q80 94 107 88"/>
+        <path d="M53 114 Q80 120 107 114"/>
+        <path d="M55 140 Q80 145 105 140"/>
+      </g>
+      <ellipse cx="80" cy="164" rx="11" ry="4" class="lan-cap"/>
     </svg>
   </div>
   <div class="hero-text">

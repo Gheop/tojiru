@@ -51,9 +51,11 @@ strong { color: #fff; font-weight: 600; }
     radial-gradient(1.5px 1.5px at 60% 44%, #fff6 0, transparent 100%);
 }
 .moon { position: absolute; top: 9%; right: 13%; width: 56px; height: 56px; fill: #f3ead3; opacity: .9; }
-.lantern { position: absolute; left: 11%; bottom: -6%; width: 96px; height: 160px; opacity: .92; }
-.lan-frame { stroke: #2a1f2a; stroke-width: 3; fill: #2a1f2a; }
-.lan-glow { fill: #e7a23c; filter: drop-shadow(0 0 22px #e7a23caa); }
+.lantern { position: absolute; left: 9%; bottom: -3%; width: 132px; height: 182px; opacity: .96; }
+.lan-cord { stroke: #2a1f2a; stroke-width: 2; }
+.lan-cap { fill: #3a2d28; }
+.lan-body { stroke: #c07f2e; stroke-width: 1.5; }
+.lan-rib { stroke: #b9802f; stroke-width: 1.2; opacity: .5; }
 
 .hero-text { position: relative; z-index: 1; padding: 2rem; }
 .kanji { font-size: 2.6rem; color: #f3ead3; letter-spacing: .35em; margin-left: .35em; opacity: .92; }
