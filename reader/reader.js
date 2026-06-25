@@ -45,7 +45,8 @@ async function loadPage(p) {
 function init(manifest) {
   document.title = manifest.title
   const menu = $('#menu')
-  const pagesEl = $('#pages')
+  const pageEl = $('#page')
+  const resize = $('#resize')
   const key = `tojiru:${manifest.title}`
   let current = 0
 
@@ -62,14 +63,14 @@ function init(manifest) {
     return t
   })
 
-  const io = new IntersectionObserver(onIntersect, { root: pagesEl, rootMargin: '800px 0px' })
+  const io = new IntersectionObserver(onIntersect, { root: pageEl, rootMargin: '800px 0px' })
   const containers = manifest.pages.map((p) => {
     const c = document.createElement('div')
     c.className = 'page'
     c.style.aspectRatio = `${p.w} / ${p.h}`
     c.dataset.n = String(p.n)
     io.observe(c)
-    pagesEl.append(c)
+    pageEl.append(c)
     return c
   })
 
@@ -86,9 +87,11 @@ function init(manifest) {
 
   function setCurrent(n) {
     if (n === current) return
-    thumbs[current - 1]?.classList.remove('current')
+    thumbs[current - 1]?.classList.remove('select')
+    containers[current - 1]?.classList.remove('select')
     current = n
-    thumbs[current - 1]?.classList.add('current')
+    thumbs[current - 1]?.classList.add('select')
+    containers[current - 1]?.classList.add('select')
     thumbs[current - 1]?.scrollIntoView({ block: 'nearest' })
     history.replaceState(null, '', `#page=${n}`)
     try { localStorage.setItem(key, String(n)) } catch {}
@@ -100,15 +103,37 @@ function init(manifest) {
     setCurrent(n)
   }
 
-  pagesEl.addEventListener('scroll', () => {
-    const mid = pagesEl.scrollTop + pagesEl.clientHeight / 2
+  pageEl.addEventListener('scroll', () => {
+    const mid = pageEl.scrollTop + pageEl.clientHeight / 2
     for (let i = 0; i < containers.length; i++) {
       const c = containers[i]
       if (c.offsetTop <= mid && c.offsetTop + c.offsetHeight > mid) { setCurrent(i + 1); break }
     }
   }, { passive: true })
 
-  $('#toggle').addEventListener('click', () => menu.classList.toggle('hidden'))
+  $('#reduce').addEventListener('click', () => {
+    const hidden = menu.classList.toggle('hidden')
+    resize.classList.toggle('hidden', hidden)
+    pageEl.classList.toggle('full', hidden)
+  })
+
+  // Draggable divider between the thumbnail column and the page area.
+  resize.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault()
+    resize.setPointerCapture(ev.pointerId)
+    const move = (e) => {
+      const w = Math.max(60, Math.min(e.clientX, 400))
+      menu.style.width = `${w}px`
+      resize.style.left = `${w}px`
+      pageEl.style.left = `${w + 5}px`
+    }
+    const up = () => {
+      resize.removeEventListener('pointermove', move)
+      resize.removeEventListener('pointerup', up)
+    }
+    resize.addEventListener('pointermove', move)
+    resize.addEventListener('pointerup', up)
+  })
 
   document.addEventListener('keydown', (ev) => {
     if (['ArrowDown', 'ArrowRight', ' ', 'PageDown', 'n'].includes(ev.key)) { goTo(current + 1); ev.preventDefault() }
