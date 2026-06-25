@@ -14,7 +14,7 @@ Ratio = taille du bundle de sortie / taille du fichier d'entrée.
 | Pepper&Carrot ép.1 | CBZ | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
 | Pepper&Carrot ép.1 | CB7 | 4 | 1,0 Mo | 1,1 Mo | ×1,06 |
 | The Fanscient #03 | CBR | 32 | 6,5 Mo | 7,1 Mo | ×1,08 |
-| Macaulay (essai) | DjVu | 163 | 2,6 Mo | 75,0 Mo | ×29,4 |
+| Macaulay (essai) | DjVu | 163 | 2,6 Mo | 15,0 Mo | ×6,0 |
 
 ## Lecture
 
@@ -24,7 +24,7 @@ Ratio = taille du bundle de sortie / taille du fichier d'entrée.
 
 **PDF raster ou scanné — la limite.** Quand les pages d'un PDF sont des images (BD raster ×33,9 ; scan NASA ×10,1), `pdftocairo` enrobe chaque image dans du SVG, ce qui pèse plus que l'image d'origine. Le NASA SP-4012 illustre le piège : il a une couche OCR (texte extractible) mais l'affichage est un scan, donc il est traité comme du raster. tojiru n'est pas fait pour du scanné ; il est fait pour du texte vectoriel.
 
-**DjVu ×29,4 — WebP implémenté, mais ce DjVu est bi-tonal.** L'extracteur sort désormais les pages en WebP q85 (implémenté). Résultat sur cet échantillon : ×29,4, contre ×15,8 en PNG lossless — WebP est *plus lourd* ici. La raison : Macaulay est un scan de texte bi-tonal (1 bit/pixel) ; PNG lossless excelle sur ce type de contenu, WebP lossy non. Pour des scans photo couleur ou niveaux de gris, WebP serait bien plus compact. L'amélioration attendue (×1,5) s'applique aux DjVu à contenu photo, pas aux DjVu texte bi-tonal.
+**DjVu ×6,0 — WebP lossless, après un détour instructif.** `ddjvu` rend chaque page en raster RGB. Premier essai en WebP *lossy* (q82) : ×29,4, soit pire que le PNG (×15,8) **et** dégradé. Macaulay est un scan de texte bi-tonal (1 bit/pixel) ; le WebP lossy ajoute du bruit JPEG sur les bords de texte et gonfle. La bonne réponse, mesurée : **WebP lossless** (effort 6), qui fait ~50 % du PNG → ×6,0, sans aucune perte. Le bundle reste plus gros que la source parce que la compression bi-tonale JB2 du DjVu bat n'importe quel format raster généraliste ; rastériser a un coût. Un DjVu à contenu photo descendrait bien plus bas.
 
 ## Méthode
 
