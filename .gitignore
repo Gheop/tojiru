@@ -9,3 +9,6 @@ test-output/
 test/helpers/sample.pdf
 test-results/
 playwright-report/
+
+# workspace interne sdd (briefs, rapports, ledger)
+.superpowers/
