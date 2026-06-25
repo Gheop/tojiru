@@ -33,6 +33,16 @@ Comics work out of the box. Only PDF and DjVu need a system tool, detected at ru
 
 Requires **Node ≥ 20**.
 
+```bash
+npm install -g tojiru
+```
+
+Or run it once without installing:
+
+```bash
+npx tojiru book.pdf --out reader/
+```
+
 From source:
 
 ```bash
