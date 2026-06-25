@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tojiru — bind any document into a static web reader</title>
+<meta name="description" content="tojiru turns a PDF, comic (CBZ/CB7/CBR) or DjVu into a self-contained static web reader. No server, no PDF engine — pages are pre-rendered once and the browser just turns them." />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="hero">
+  <div class="sky">
+    <div class="stars"></div>
+    <svg class="moon" viewBox="0 0 100 100" aria-hidden="true"><path d="M62 8a44 44 0 1 0 30 76A52 52 0 0 1 62 8Z"/></svg>
+    <svg class="lantern" viewBox="0 0 160 220" aria-hidden="true">
+      <defs>
+        <radialGradient id="halo" cx="50%" cy="44%" r="50%">
+          <stop offset="0%" stop-color="#ffd98a" stop-opacity=".6"/>
+          <stop offset="55%" stop-color="#e7a23c" stop-opacity=".18"/>
+          <stop offset="100%" stop-color="#e7a23c" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f3bd55"/>
+          <stop offset="48%" stop-color="#ffe1a0"/>
+          <stop offset="100%" stop-color="#eeae47"/>
+        </linearGradient>
+      </defs>
+      <circle cx="80" cy="100" r="90" fill="url(#halo)"/>
+      <line x1="80" y1="8" x2="80" y2="30" class="lan-cord"/>
+      <ellipse cx="80" cy="33" rx="11" ry="4" class="lan-cap"/>
+      <path d="M58 38 Q80 31 102 38 Q112 80 102 162 Q80 170 58 162 Q48 80 58 38 Z" fill="url(#paper)" class="lan-body"/>
+      <g class="lan-rib" fill="none">
+        <path d="M57 62 Q80 67 103 62"/>
+        <path d="M53 88 Q80 94 107 88"/>
+        <path d="M53 114 Q80 120 107 114"/>
+        <path d="M55 140 Q80 145 105 140"/>
+      </g>
+      <ellipse cx="80" cy="164" rx="11" ry="4" class="lan-cap"/>
+    </svg>
+  </div>
+  <div class="hero-text">
+    <div class="kanji">綴じる</div>
+    <h1>tojiru</h1>
+    <p class="tagline">Bind any document into a quiet, static web reader.</p>
+    <p class="sub">PDF · CBZ · CB7 · CBR · DjVu — one folder you can host anywhere.</p>
+    <a class="cta" href="#read">read one now ↓</a>
+  </div>
+</header>
+
+<div class="stitch" aria-hidden="true"></div>
+
+<main>
+
+  <section class="prose">
+    <p>Point <em>tojiru</em> at a document and it pre-renders every page, writes a tiny manifest, and ships a self-contained folder. No server. No client-side PDF engine. The browser does nothing but turn pages it already has.</p>
+    <p>For born-digital text PDFs the pages become crisp <strong>vector SVG</strong> — sharp at any zoom, and often <strong>smaller</strong> than the source file.</p>
+  </section>
+
+  <section id="read" class="read">
+    <h2>Read one, right here</h2>
+    <p class="note">Real tojiru output, running in your browser. Scroll, zoom, flip pages.</p>
+    <div class="reader-frame">
+      <iframe src="demo/ploum/index.html" title="Les non-humains by Ploum — a vector-PDF reader built by tojiru" loading="lazy"></iframe>
+    </div>
+    <p class="caption">“Les non-humains” by Ploum (CC BY-SA) — a born-digital PDF, rendered as vector SVG.</p>
+    <p class="more"><a href="demo/ploum/" target="_blank" rel="noopener">open full screen ↗</a> &nbsp;·&nbsp; <a href="demo/comic/" target="_blank" rel="noopener">open a comic (CBZ) ↗</a></p>
+  </section>
+
+  <div class="stitch" aria-hidden="true"></div>
+
+  <section class="bench">
+    <h2>What it weighs</h2>
+    <p class="note">Output bundle size relative to the input. Lower is better. Measured on a real sample corpus.</p>
+    <div class="stats">
+      <div class="stat good">
+        <div class="ratio">×0.9</div>
+        <div class="what">Vector text PDF</div>
+        <div class="detail">Crisp SVG, smaller than the source.</div>
+      </div>
+      <div class="stat good">
+        <div class="ratio">×1.1</div>
+        <div class="what">Comics (CBZ/CB7/CBR)</div>
+        <div class="detail">Images copied as-is, plus thumbnails.</div>
+      </div>
+      <div class="stat ok">
+        <div class="ratio">×6</div>
+        <div class="what">DjVu</div>
+        <div class="detail">Rendered to lossless WebP. Scans inflate.</div>
+      </div>
+      <div class="stat bad">
+        <div class="ratio">×10–34</div>
+        <div class="what">Scanned / raster PDF</div>
+        <div class="detail">Page-images wrapped in SVG. The wrong fit.</div>
+      </div>
+    </div>
+    <p class="prose-inline">tojiru is built for <strong>vector text</strong>. Feed it a born-digital PDF and the reader is light and razor-sharp. Feed it a scan and it bloats — for those, the format is the wrong tool, and it says so.</p>
+  </section>
+
+  <div class="stitch" aria-hidden="true"></div>
+
+  <section class="formats">
+    <h2>Formats</h2>
+    <ul class="fmt-list">
+      <li><span class="fmt">PDF</span> one vector SVG per page <span class="dep">poppler / mupdf</span></li>
+      <li><span class="fmt">CBZ</span> zip of images <span class="dep none">no extra dependency</span></li>
+      <li><span class="fmt">CB7</span> 7-Zip archive of images <span class="dep">p7zip</span></li>
+      <li><span class="fmt">CBR</span> RAR archive of images <span class="dep none">no extra dependency</span></li>
+      <li><span class="fmt">DjVu</span> rendered page by page <span class="dep">djvulibre</span></li>
+    </ul>
+    <p class="note">Comics work out of the box. PDF and DjVu need one system tool, detected at runtime — if it's missing, tojiru tells you which package to install.</p>
+  </section>
+
+  <div class="stitch" aria-hidden="true"></div>
+
+  <section class="get">
+    <h2>Get it</h2>
+<pre><code>git clone &lt;repo&gt; tojiru
+cd tojiru &amp;&amp; npm install &amp;&amp; npm run build &amp;&amp; npm link
+
+tojiru book.pdf --out site/
+# serve the folder, or open site/index.html</code></pre>
+    <p class="more"><a class="repo" href="#" data-repo>★ source &amp; docs ↗</a></p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="mark">綴じる</div>
+  <p>tojiru — bind a book.</p>
+  <p class="links">
+    <a href="#" data-repo>GitHub</a> ·
+    <a href="#" data-repo-gl>GitLab</a> ·
+    MIT licensed
+  </p>
+  <p class="fineprint">A static reader. The browser turns the pages; nothing else runs.</p>
+</footer>
+
+</body>
+</html>

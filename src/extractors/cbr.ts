@@ -10,11 +10,13 @@ export const cbrExtractor: Extractor = {
   async canHandle(file) { return (await detectKind(file)) === 'cbr' },
   async extract(file, workdir) {
     await mkdir(workdir, { recursive: true })
-    const extractor = await createExtractorFromFile({ filepath: file, targetPath: workdir })
-    // Consommer l'itérateur complet pour déclencher l'écriture sur disque.
+    // filenameTransform strips any directory component so that entries with
+    // `../` or absolute paths cannot escape workdir (zip-slip defence).
+    const extractor = await createExtractorFromFile({ filepath: file, targetPath: workdir, filenameTransform: (name) => basename(name) })
+    // Consume the full iterator to trigger writes to disk.
     const { files } = extractor.extract()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const _ of files) { /* parcourir pour écrire dans targetPath */ }
+    for (const _ of files) { /* iterate to trigger writes to targetPath */ }
 
     const found: string[] = []
     async function walk(d: string) {
@@ -26,7 +28,7 @@ export const cbrExtractor: Extractor = {
     }
     await walk(workdir)
     found.sort((a, b) => naturalCompare(basename(a), basename(b)))
-    if (found.length === 0) throw new Error('Aucune image dans le CBR')
+    if (found.length === 0) throw new Error('No images found in the CBR')
     const pages: RasterPage[] = []
     for (const f of found) pages.push({ type: 'raster', imagePath: f, ...(await imageDims(f)) })
     return { title: basename(file, extname(file)), kind: 'cbr', pages }

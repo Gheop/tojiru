@@ -13,6 +13,6 @@ export function naturalCompare(a: string, b: string): number {
 
 export async function imageDims(path: string): Promise<{ w: number; h: number }> {
   const m = await sharp(path).metadata()
-  if (!m.width || !m.height) throw new Error(`Dimensions illisibles : ${path}`)
+  if (!m.width || !m.height) throw new Error(`Cannot read dimensions: ${path}`)
   return { w: m.width, h: m.height }
 }

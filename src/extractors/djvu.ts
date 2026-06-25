@@ -10,7 +10,7 @@ import { imageDims } from './images.js'
 async function pageCount(file: string): Promise<number> {
   const { stdout } = await run('djvused', ['-e', 'n', file])
   const n = parseInt(stdout.trim(), 10)
-  if (!Number.isFinite(n) || n < 1) throw new Error('Nombre de pages DjVu illisible')
+  if (!Number.isFinite(n) || n < 1) throw new Error('Could not read DjVu page count')
   return n
 }
 
@@ -19,7 +19,7 @@ export const djvuExtractor: Extractor = {
   async canHandle(file) { return (await detectKind(file)) === 'djvu' },
   async extract(file, workdir) {
     if (!(await hasBinary('ddjvu')) || !(await hasBinary('djvused'))) {
-      throw new Error('djvulibre introuvable. Installe djvulibre (ddjvu, djvused).')
+      throw new Error('djvulibre not found. Install djvulibre (ddjvu, djvused).')
     }
     await mkdir(workdir, { recursive: true })
     const count = await pageCount(file)

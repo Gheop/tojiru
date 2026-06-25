@@ -20,7 +20,7 @@ async function pageCount(file: string): Promise<number> {
   }
   const { stdout } = await run('mutool', ['info', file])
   const m = stdout.match(/Pages:\s+(\d+)/)
-  if (!m) throw new Error('Impossible de déterminer le nombre de pages du PDF')
+  if (!m) throw new Error('Could not determine page count for PDF')
   return Number(m[1])
 }
 
@@ -30,7 +30,7 @@ function viewBox(svg: string): { w: number; h: number } {
   const w = svg.match(/width="([\d.]+)/)
   const h = svg.match(/height="([\d.]+)/)
   if (w && h) return { w: Math.round(Number(w[1])), h: Math.round(Number(h[1])) }
-  throw new Error('SVG sans dimensions exploitables')
+  throw new Error('SVG has no usable dimensions')
 }
 
 export const pdfExtractor: Extractor = {
@@ -41,7 +41,7 @@ export const pdfExtractor: Extractor = {
   async extract(file, workdir) {
     const conv = await findPdfConverter()
     if (!conv) {
-      throw new Error('Aucun convertisseur PDF trouvé. Installe poppler (pdftocairo) ou mupdf (mutool).')
+      throw new Error('No PDF converter found. Install poppler (pdftocairo) or mupdf (mutool).')
     }
     const count = await pageCount(file)
     const width = Math.max(4, String(count).length)

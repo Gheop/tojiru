@@ -28,14 +28,14 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
   const kind = await detectKind(input)
   const extractor = EXTRACTORS.find((e) => e.name === kind)
   if (!extractor) {
-    throw new Error(kind ? `Format pas encore supporté : ${kind}` : 'Format non reconnu')
+    throw new Error(kind ? `Format not yet supported: ${kind}` : 'Unrecognised format')
   }
 
   const work = await mkdtemp(join(tmpdir(), 'tojiru-'))
   try {
     const doc = await extractor.extract(input, work)
     if (opts.title) doc.title = opts.title
-    if (doc.pages.length === 0) throw new Error('Aucune page extraite.')
+    if (doc.pages.length === 0) throw new Error('No pages extracted.')
     const pages = await processPages(doc, opts.outDir)
     await writeFolder(buildManifest(doc.title, doc.kind, pages), opts.outDir)
     return { outDir: opts.outDir, pageCount: doc.pages.length }
