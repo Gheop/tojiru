@@ -28,10 +28,10 @@ export const djvuExtractor: Extractor = {
     for (let i = 1; i <= count; i++) {
       const stem = String(i).padStart(width, '0')
       const tiff = join(workdir, `${stem}.tiff`)
-      const png = join(workdir, `${stem}.png`)
+      const webp = join(workdir, `${stem}.webp`)
       await run('ddjvu', ['-format=tiff', `-page=${i}`, file, tiff])
-      await sharp(tiff).png().toFile(png)   // tiff non affichable -> png
-      pages.push({ type: 'raster', imagePath: png, ...(await imageDims(png)) })
+      await sharp(tiff).webp({ quality: 85 }).toFile(webp)
+      pages.push({ type: 'raster', imagePath: webp, ...(await imageDims(webp)) })
     }
     return { title: basename(file, extname(file)), kind: 'djvu', pages }
   },

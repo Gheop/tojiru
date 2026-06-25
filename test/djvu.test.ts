@@ -19,7 +19,7 @@ test('extrait un DjVu en pages raster affichables', async (ctx) => {
   expect(doc.kind).toBe('djvu')
   expect(doc.pages).toHaveLength(2)
   expect(doc.pages[0].type).toBe('raster')
-  expect(doc.pages[0].imagePath).toMatch(/\.png$/)  // affichable navigateur
+  expect(doc.pages[0].imagePath).toMatch(/\.webp$/)  // affichable navigateur
   expect(doc.pages[0].w).toBeGreaterThan(0)
   rmSync(work, { recursive: true, force: true })
 })
