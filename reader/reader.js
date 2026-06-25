@@ -23,10 +23,18 @@ async function fetchSvg(file) {
 
 async function loadPage(p) {
   if (p.type === 'vector') {
-    const text = await fetchSvg(p.file)
-    const tpl = document.createElement('template')
-    tpl.innerHTML = text.trim()
-    return tpl.content.firstElementChild
+    let text = await fetchSvg(p.file)
+    // pdftocairo restarts its glyph <symbol> ids at 0 on every page. Injecting all
+    // pages inline into one document makes a later <use href="#glyph…"> resolve to
+    // page 1's glyph (garbled text). Render each page as its own document via
+    // <object> so the ids stay isolated. Strip the fixed pt width/height so the
+    // SVG scales to its container through its viewBox.
+    text = text.replace(/(<svg[^>]*?)\swidth="[^"]*"/i, '$1').replace(/(<svg[^>]*?)\sheight="[^"]*"/i, '$1')
+    const obj = document.createElement('object')
+    obj.type = 'image/svg+xml'
+    obj.data = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }))
+    obj.addEventListener('load', () => URL.revokeObjectURL(obj.data), { once: true })
+    return obj
   }
   const img = document.createElement('img')
   img.src = p.file
