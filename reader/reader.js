@@ -4,7 +4,7 @@ async function loadManifest() {
   const inline = document.getElementById('tojiru-manifest')
   if (inline) return JSON.parse(inline.textContent)
   const res = await fetch('manifest.json')
-  if (!res.ok) throw new Error('manifest.json introuvable')
+  if (!res.ok) throw new Error('manifest.json not found')
   return res.json()
 }
 
@@ -115,5 +115,5 @@ function init(manifest) {
 }
 
 loadManifest().then(init).catch((e) => {
-  document.body.innerHTML = `<p style="padding:1rem">Erreur de chargement : ${e.message}</p>`
+  document.body.innerHTML = `<p style="padding:1rem">Load error: ${e.message}</p>`
 })

@@ -10,7 +10,7 @@ export function run(cmd: string, args: string[]): Promise<{ stdout: string; code
     child.on('error', reject)
     child.on('close', (code) => {
       if (code === 0) resolve({ stdout, code })
-      else reject(new Error(`${cmd} a échoué (code ${code}) : ${stderr.trim()}`))
+      else reject(new Error(`${cmd} failed (exit ${code}): ${stderr.trim()}`))
     })
   })
 }

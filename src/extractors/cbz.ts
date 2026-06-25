@@ -40,7 +40,7 @@ export const cbzExtractor: Extractor = {
     await mkdir(workdir, { recursive: true })
     const zip = await openZip(file)
     const files = (await extractAll(zip, workdir)).sort((a, b) => naturalCompare(basename(a), basename(b)))
-    if (files.length === 0) throw new Error('Aucune image dans le CBZ')
+    if (files.length === 0) throw new Error('No images found in the CBZ')
     const pages: RasterPage[] = []
     for (const f of files) pages.push({ type: 'raster', imagePath: f, ...(await imageDims(f)) })
     return { title: basename(file, extname(file)), kind: 'cbz', pages }
