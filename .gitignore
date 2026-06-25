@@ -4,3 +4,8 @@ dist/
 .DS_Store
 /tmp/
 test-output/
+
+# artefact de smoke-test CLI
+test/helpers/sample.pdf
+test-results/
+playwright-report/
