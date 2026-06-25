@@ -96,4 +96,12 @@ npm run dev -- <input> --out <dir>   # run the CLI from source via tsx
 
 ## License
 
-To be decided before publication. Suggested: MIT.
+MIT — see [LICENSE](LICENSE).
+
+## Changelog
+
+### v0.1.0 — Initial release (2026-06-25)
+
+- PDF → vector SVG pages; CBZ/CB7/CBR/DjVu → image pages
+- Static folder bundle with a vanilla-JS lazy-loading reader (thumbnails, keyboard nav, resume, deep links)
+- Format detection by content; graceful degradation when an optional system tool is missing
