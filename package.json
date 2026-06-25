@@ -1,0 +1,27 @@
+{
+  "name": "tojiru",
+  "version": "0.1.0",
+  "description": "Transforme un document à pages fixes en lecteur web statique",
+  "type": "module",
+  "bin": { "tojiru": "dist/cli.js" },
+  "files": ["dist", "reader"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "sharp": "^0.33.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.14.0",
+    "pdf-lib": "^1.17.1",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
