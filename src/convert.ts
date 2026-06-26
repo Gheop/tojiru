@@ -23,6 +23,8 @@ export interface ConvertOptions {
   singleFile?: string
   imageFormat?: 'keep' | 'webp'
   quality?: number
+  spread?: boolean
+  rtl?: boolean
 }
 
 export interface ConvertResult {
@@ -50,7 +52,12 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
     const pages = await processPages(doc, bundleDir, { imageFormat: opts.imageFormat, quality: opts.quality }, opts.onProgress)
     const search = buildSearchIndex(doc)
-    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline)
+    const manifest = buildManifest(doc.title, doc.kind, pages, {
+      searchable: search.length > 0,
+      outline: doc.outline,
+      spread: opts.spread,
+      rtl: opts.rtl,
+    })
     if (opts.singleFile) {
       await writeSingleFile(manifest, bundleDir, opts.singleFile, search)
       return { outDir: opts.singleFile, pageCount: doc.pages.length }

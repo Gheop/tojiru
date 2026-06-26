@@ -46,21 +46,23 @@ export async function makeBundle(outDir: string): Promise<void> {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, outDir)
     const search = buildSearchIndex(doc)
-    await writeFolder(buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline), outDir, search)
+    const manifest = buildManifest(doc.title, doc.kind, pages, { searchable: search.length > 0, outline: doc.outline })
+    await writeFolder(manifest, outDir, search)
   } finally {
     await rm(work, { recursive: true, force: true })
   }
 }
 
-// Builds a single-file HTML (the double-click / file:// output) into outFile.
-export async function makeSingleFile(outFile: string): Promise<void> {
+// Builds a single-file HTML (the double-click / file:// output) into outFile. `extras`
+// lets a spec exercise layout flags (spread, rtl) on an isolated file:// bundle.
+export async function makeSingleFile(outFile: string, extras: { spread?: boolean; rtl?: boolean } = {}): Promise<void> {
   const work = await mkdtemp(join(tmpdir(), 'tojiru-e2e-sf-'))
   const bundle = await mkdtemp(join(tmpdir(), 'tojiru-e2e-sfb-'))
   try {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, bundle)
     const search = buildSearchIndex(doc)
-    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline)
+    const manifest = buildManifest(doc.title, doc.kind, pages, { searchable: search.length > 0, outline: doc.outline, ...extras })
     await writeFolder(manifest, bundle, search)
     await writeSingleFile(manifest, bundle, outFile, search)
   } finally {

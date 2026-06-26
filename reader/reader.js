@@ -150,6 +150,11 @@ function init(manifest) {
     return btn
   })
 
+  // Double-page spread / right-to-left layout, when the build asked for it. The classes
+  // drive the CSS; rtl also flips the horizontal navigation keys further down.
+  pageEl.classList.toggle('spread', !!manifest.spread)
+  pageEl.classList.toggle('rtl', !!manifest.rtl)
+
   const io = new IntersectionObserver(onIntersect, { root: pageEl, rootMargin: '800px 0px' })
   const containers = manifest.pages.map((p) => {
     const c = document.createElement('div')
@@ -315,8 +320,11 @@ function init(manifest) {
     }
     // Don't let page navigation steal keys while typing in the search box.
     if (ev.target instanceof HTMLInputElement) return
-    if (['ArrowDown', 'ArrowRight', ' ', 'PageDown', 'n'].includes(ev.key)) { goTo(current + 1); ev.preventDefault() }
-    else if (['ArrowUp', 'ArrowLeft', 'PageUp', 'p'].includes(ev.key)) { goTo(current - 1); ev.preventDefault() }
+    // In RTL (manga), left advances and right goes back; vertical keys are unchanged.
+    const fwd = manifest.rtl ? 'ArrowLeft' : 'ArrowRight'
+    const back = manifest.rtl ? 'ArrowRight' : 'ArrowLeft'
+    if (['ArrowDown', ' ', 'PageDown', 'n', fwd].includes(ev.key)) { goTo(current + 1); ev.preventDefault() }
+    else if (['ArrowUp', 'PageUp', 'p', back].includes(ev.key)) { goTo(current - 1); ev.preventDefault() }
     else if (ev.key === 'Home') goTo(1)
     else if (ev.key === 'End') goTo(manifest.pages.length)
   })
