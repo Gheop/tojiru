@@ -1,6 +1,7 @@
 import { readFile, unlink, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
-import type { Document, Extractor, Page, ProgressFn } from './types.js'
+import type { Document, Extractor, Page, ProgressFn, ExtractOptions } from './types.js'
+import { DEFAULT_QUALITY } from './types.js'
 import { detectKind } from './detect.js'
 import { findPdfConverter } from '../tools.js'
 import { run } from '../run.js'
@@ -55,7 +56,8 @@ export const pdfExtractor: Extractor = {
   async canHandle(file) {
     return (await detectKind(file)) === 'pdf'
   },
-  async extract(file, workdir, onProgress?: ProgressFn) {
+  async extract(file, workdir, onProgress?: ProgressFn, opts?: ExtractOptions) {
+    const quality = opts?.quality ?? DEFAULT_QUALITY
     const conv = await findPdfConverter()
     if (!conv) {
       throw new Error('No PDF converter found. Install poppler (pdftocairo) or mupdf (mutool).')
@@ -81,7 +83,7 @@ export const pdfExtractor: Extractor = {
         await run('pdftocairo', ['-png', '-singlefile', '-r', '150', '-f', String(i), '-l', String(i), file, stemPath])
         const pngPath = `${stemPath}.png`
         const webpPath = `${stemPath}.webp`
-        await sharp(pngPath).webp({ quality: 82, effort: 6 }).toFile(webpPath)
+        await sharp(pngPath).webp({ quality, effort: 6 }).toFile(webpPath)
         await unlink(svgPath)
         await unlink(pngPath)
         pages.push({ type: 'raster', imagePath: webpPath, ...(await imageDims(webpPath)) })

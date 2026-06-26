@@ -29,13 +29,18 @@ program
   .option('--serve', 'start a preview server after converting')
   .option('--single-file [file]', 'output a single portable HTML file (double-click to read offline)')
   .option('--image-format <fmt>', 'comic/raster page encoding: keep (as-is) or webp', 'keep')
-  .action(async (input: string, opts: { out?: string; title?: string; force?: boolean; serve?: boolean; singleFile?: boolean | string; imageFormat?: string }) => {
+  .option('--quality <n>', 'WebP quality (1-100) for lossy raster pages', '80')
+  .action(async (input: string, opts: { out?: string; title?: string; force?: boolean; serve?: boolean; singleFile?: boolean | string; imageFormat?: string; quality?: string }) => {
     try {
       if (!existsSync(input)) throw new Error(`File not found: ${input}`)
       if (opts.imageFormat !== 'keep' && opts.imageFormat !== 'webp') {
         throw new Error(`--image-format must be "keep" or "webp" (got "${opts.imageFormat}")`)
       }
       const imageFormat = opts.imageFormat as 'keep' | 'webp'
+      const quality = parseInt(opts.quality ?? '80', 10)
+      if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
+        throw new Error(`--quality must be an integer 1-100 (got "${opts.quality}")`)
+      }
 
       const isTTY = process.stderr.isTTY === true
       const onProgress = isTTY
@@ -50,7 +55,7 @@ program
           ? opts.singleFile
           : basename(input).replace(/\.[^.]+$/, '') + '.html'
 
-        const r = await convert(input, { outDir: '', title: opts.title, onProgress, singleFile: htmlPath, imageFormat })
+        const r = await convert(input, { outDir: '', title: opts.title, onProgress, singleFile: htmlPath, imageFormat, quality })
 
         if (isTTY) process.stderr.write('\x1b[2K\r')
         console.log(`✓ ${r.pageCount} pages → ${htmlPath}`)
@@ -62,7 +67,7 @@ program
           throw new Error(`Folder ${outDir} is not empty. Use --force to overwrite.`)
         }
 
-        const r = await convert(input, { outDir, title: opts.title, onProgress, imageFormat })
+        const r = await convert(input, { outDir, title: opts.title, onProgress, imageFormat, quality })
 
         // Clear progress line before success message
         if (isTTY) process.stderr.write('\x1b[2K\r')
