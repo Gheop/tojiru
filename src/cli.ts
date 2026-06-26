@@ -9,8 +9,11 @@ import { convert } from './convert.js'
 import { serve } from './serve.js'
 
 function openBrowser(url: string): void {
-  const cmd = process.platform === 'darwin' ? 'open' : 'xdg-open'
-  try { spawn(cmd, [url], { detached: true, stdio: 'ignore' }).unref() } catch { /* best-effort */ }
+  const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open'
+  // Windows: `cmd /c start "" <url>`. The empty "" is start's title argument, so a
+  // url with spaces isn't mistaken for the window title.
+  const args = process.platform === 'win32' ? ['/c', 'start', '', url] : [url]
+  try { spawn(cmd, args, { detached: true, stdio: 'ignore' }).unref() } catch { /* best-effort */ }
 }
 
 const program = new Command()

@@ -1,3 +1,21 @@
+stages:
+  - test
+  - deploy
+
+test:
+  stage: test
+  image: node:20
+  # poppler-utils: pdftocairo (PDF). djvulibre-bin: DjVu tools. p7zip-full: 7z (CB7).
+  before_script:
+    - apt-get update && apt-get install -y poppler-utils djvulibre-bin p7zip-full
+    - npm ci
+  script:
+    - npm run build
+    - npm test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 pages:
   stage: deploy
   image: alpine:latest

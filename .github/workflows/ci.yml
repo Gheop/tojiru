@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Unit + integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # poppler-utils: pdftocairo (PDF). djvulibre-bin: ddjvu/djvused/c44/djvm (DjVu).
+      # p7zip-full: the 7z binary (CB7 + comic fixtures). CBR runs on bundled WASM.
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils djvulibre-bin p7zip-full
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  e2e:
+    name: Reader rendering (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
