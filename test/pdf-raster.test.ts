@@ -10,7 +10,7 @@ let dir: string
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'tojiru-pdf-raster-')) })
 afterAll(() => { rmSync(dir, { recursive: true, force: true }) })
 
-test('image-dominated PDF pages are emitted as raster with .png paths and positive dims', async (ctx) => {
+test('image-dominated PDF pages are emitted as raster with .webp paths and positive dims', async (ctx) => {
   if (!(await findPdfConverter())) ctx.skip()
   const pdf = join(dir, 'scanned.pdf')
   await makeImagePdf(pdf, 2)
@@ -22,7 +22,7 @@ test('image-dominated PDF pages are emitted as raster with .png paths and positi
     for (const page of doc.pages) {
       expect(page.type).toBe('raster')
       if (page.type === 'raster') {
-        expect(page.imagePath).toMatch(/\.png$/)
+        expect(page.imagePath).toMatch(/\.webp$/)
         expect(page.w).toBeGreaterThan(0)
         expect(page.h).toBeGreaterThan(0)
       }

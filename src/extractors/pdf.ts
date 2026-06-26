@@ -4,6 +4,7 @@ import type { Document, Extractor, Page, ProgressFn } from './types.js'
 import { detectKind } from './detect.js'
 import { findPdfConverter } from '../tools.js'
 import { run } from '../run.js'
+import sharp from 'sharp'
 import { imageDims } from './images.js'
 
 function pad(n: number, width: number): string {
@@ -74,12 +75,16 @@ export const pdfExtractor: Extractor = {
       const svg = await readFile(svgPath, 'utf8')
 
       if (conv === 'pdftocairo' && isRasterDominated(svg)) {
-        // Full-page bitmap wrapped in SVG: re-render directly to PNG and drop the SVG.
-        const pngStem = join(workdir, stem)
-        await run('pdftocairo', ['-png', '-singlefile', '-r', '150', '-f', String(i), '-l', String(i), file, pngStem])
-        const pngPath = `${pngStem}.png`
+        // Full-page bitmap wrapped in SVG: re-render to a raster image, encode it
+        // as WebP (far smaller than the lossless PNG render), and drop the SVG.
+        const stemPath = join(workdir, stem)
+        await run('pdftocairo', ['-png', '-singlefile', '-r', '150', '-f', String(i), '-l', String(i), file, stemPath])
+        const pngPath = `${stemPath}.png`
+        const webpPath = `${stemPath}.webp`
+        await sharp(pngPath).webp({ quality: 82, effort: 6 }).toFile(webpPath)
         await unlink(svgPath)
-        pages.push({ type: 'raster', imagePath: pngPath, ...(await imageDims(pngPath)) })
+        await unlink(pngPath)
+        pages.push({ type: 'raster', imagePath: webpPath, ...(await imageDims(webpPath)) })
       } else {
         // Vector page: round coordinates to shrink SVG, then store.
         const rounded = roundCoords(svg)
