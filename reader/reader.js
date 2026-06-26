@@ -103,6 +103,28 @@ function init(manifest) {
   const key = `tojiru:${manifest.title}`
   let current = 0
 
+  // Table of contents, when the document carries an outline. It sits at the top of the
+  // thumbnail column; each entry jumps to its page (goTo is hoisted, defined below).
+  if (manifest.outline && manifest.outline.length) {
+    const toc = document.createElement('div')
+    toc.id = 'toc'
+    const head = document.createElement('div')
+    head.className = 'toc-head'
+    head.textContent = 'Contents'
+    toc.append(head)
+    for (const e of manifest.outline) {
+      const item = document.createElement('button')
+      item.type = 'button'
+      item.className = 'toc-item'
+      item.textContent = e.title
+      item.title = e.title
+      item.style.paddingLeft = `${8 + Math.min(e.depth, 5) * 12}px`
+      item.addEventListener('click', () => goTo(e.page))
+      toc.append(item)
+    }
+    menu.append(toc)
+  }
+
   // Each thumbnail is a real <button> so it can be reached and activated by
   // keyboard, not just clicked. The .select class lives on the button.
   const thumbs = manifest.pages.map((p) => {

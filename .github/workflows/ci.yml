@@ -16,9 +16,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      # poppler-utils: pdftocairo (PDF). djvulibre-bin: ddjvu/djvused/c44/djvm (DjVu).
-      # p7zip-full: the 7z binary (CB7 + comic fixtures). CBR runs on bundled WASM.
-      - run: sudo apt-get update && sudo apt-get install -y poppler-utils djvulibre-bin p7zip-full
+      # poppler-utils: pdftocairo/pdftotext (PDF + search). djvulibre-bin: DjVu tools.
+      # p7zip-full: the 7z binary (CB7 + comic fixtures). mupdf-tools: mutool (PDF outline).
+      # CBR runs on bundled WASM.
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils djvulibre-bin p7zip-full mupdf-tools
       - run: npm ci
       - run: npm run build
       - run: npm test

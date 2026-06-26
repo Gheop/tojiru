@@ -33,6 +33,10 @@ async function demoDoc(work: string): Promise<Document> {
       { type: 'vector', svgPath: a, w: 200, h: 300, text: 'Alpha opens the first chapter here' },
       { type: 'vector', svgPath: b, w: 200, h: 300, text: 'Beta closes the second chapter here' },
     ],
+    outline: [
+      { title: 'Alpha', page: 1, depth: 0 },
+      { title: 'Beta', page: 2, depth: 0 },
+    ],
   }
 }
 
@@ -42,7 +46,7 @@ export async function makeBundle(outDir: string): Promise<void> {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, outDir)
     const search = buildSearchIndex(doc)
-    await writeFolder(buildManifest(doc.title, doc.kind, pages, search.length > 0), outDir, search)
+    await writeFolder(buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline), outDir, search)
   } finally {
     await rm(work, { recursive: true, force: true })
   }
@@ -56,7 +60,7 @@ export async function makeSingleFile(outFile: string): Promise<void> {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, bundle)
     const search = buildSearchIndex(doc)
-    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0)
+    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline)
     await writeFolder(manifest, bundle, search)
     await writeSingleFile(manifest, bundle, outFile, search)
   } finally {

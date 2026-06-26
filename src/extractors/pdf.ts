@@ -7,6 +7,7 @@ import { findPdfConverter, hasBinary } from '../tools.js'
 import { run } from '../run.js'
 import sharp from 'sharp'
 import { imageDims } from './images.js'
+import { extractOutline } from './outline.js'
 
 function pad(n: number, width: number): string {
   return String(n).padStart(width, '0')
@@ -116,10 +117,13 @@ export const pdfExtractor: Extractor = {
       onProgress?.(i, count, 'Converting')
     }
 
+    const outline = await extractOutline(file)
+
     return {
       title: basename(file, extname(file)),
       kind: 'pdf',
       pages,
+      outline: outline.length ? outline : undefined,
     }
   },
 }

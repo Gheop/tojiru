@@ -68,6 +68,14 @@ body { font-family: verdana, sans-serif; background: var(--bg); }
   overflow: auto; text-align: center; background: var(--bg); padding-top: 28px;
 }
 #menu.hidden { display: none; }
+#toc { text-align: left; padding: 2px 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--chrome-border); }
+#toc .toc-head { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 2px 8px 5px; }
+.toc-item {
+  display: block; width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--chrome-fg); padding: 4px 8px; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.toc-item:hover, .toc-item:focus-visible { background: var(--divider-bg); outline: none; }
 #menu .thumb {
   display: block; width: 100%; padding: 0; margin: 0; border: 0;
   background: none; cursor: pointer; text-align: center; font-family: inherit;

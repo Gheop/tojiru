@@ -50,7 +50,7 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
     const pages = await processPages(doc, bundleDir, { imageFormat: opts.imageFormat, quality: opts.quality }, opts.onProgress)
     const search = buildSearchIndex(doc)
-    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0)
+    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0, doc.outline)
     if (opts.singleFile) {
       await writeSingleFile(manifest, bundleDir, opts.singleFile, search)
       return { outDir: opts.singleFile, pageCount: doc.pages.length }

@@ -5,9 +5,10 @@ stages:
 test:
   stage: test
   image: node:20
-  # poppler-utils: pdftocairo (PDF). djvulibre-bin: DjVu tools. p7zip-full: 7z (CB7).
+  # poppler-utils: pdftocairo/pdftotext. djvulibre-bin: DjVu. p7zip-full: 7z (CB7).
+  # mupdf-tools: mutool (PDF outline / table of contents).
   before_script:
-    - apt-get update && apt-get install -y poppler-utils djvulibre-bin p7zip-full
+    - apt-get update && apt-get install -y poppler-utils djvulibre-bin p7zip-full mupdf-tools
     - npm ci
   script:
     - npm run build

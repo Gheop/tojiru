@@ -6,10 +6,15 @@ export interface VectorPage { type: 'vector'; svgPath: string; w: number; h: num
 export interface RasterPage { type: 'raster'; imagePath: string; w: number; h: number; text?: string }
 export type Page = VectorPage | RasterPage
 
+// One table-of-contents entry: a title, the 1-based page it points at, and its nesting
+// depth (0 = top level). Built from a PDF's outline when one is present.
+export interface OutlineEntry { title: string; page: number; depth: number }
+
 export interface Document {
   title: string
   kind: Kind
   pages: Page[]
+  outline?: OutlineEntry[]
 }
 
 export type ProgressFn = (done: number, total: number, label: string) => void
