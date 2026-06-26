@@ -79,6 +79,17 @@ Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
 | `-t, --title <title>` | Document title shown in the reader |
 | `-f, --force` | Overwrite a non-empty output folder |
 | `--serve` | Start a preview server on the output folder after converting |
+| `--single-file [file]` | Output a single portable HTML file instead of a folder |
+
+### Single file
+
+```bash
+tojiru book.pdf --single-file book.html
+```
+
+Produces one `.html` file with all pages, thumbnails, and the reader bundled in. Double-click it to read offline — no server, no extra files. Works on any OS that has a browser.
+
+Capped at 30 MB of page data. For large documents, use the folder output and host it.
 
 ### Preview server
 
@@ -133,6 +144,13 @@ npm run dev -- <input> --out <dir>   # run the CLI from source via tsx
 MIT — see [LICENSE](LICENSE).
 
 ## Changelog
+
+### v0.4.0 — Single-file output (2026-06-26)
+
+- `--single-file [file]` option: bundles all pages, thumbnails, and the reader into one portable HTML file
+- Double-click the file to read offline — no server, no folder needed
+- Size guard: rejects documents whose page data exceeds 30 MB and tells you to use folder output instead
+- Folder mode and all existing tests unchanged
 
 ### v0.3.0 — Smaller PDF bundles (2026-06-26)
 
