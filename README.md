@@ -134,6 +134,11 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.3.0 — Smaller PDF bundles (2026-06-26)
+
+- Vector PDF page coordinates are rounded to 2 decimals — ~25% smaller pages, no visible change
+- Image-only PDF pages (scans, comic PDFs) are auto-detected and rendered as WebP instead of SVG-wrapped bitmaps — e.g. a comic PDF dropped from ×34 to ×2.7
+
 ### v0.2.0 — Preview server and progress (2026-06-25)
 
 - Built-in `tojiru serve <dir>` command previews a bundle locally — uses Node built-ins only, no extra install needed
