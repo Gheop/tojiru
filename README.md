@@ -80,6 +80,7 @@ Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
 | `-f, --force` | Overwrite a non-empty output folder |
 | `--serve` | Start a preview server on the output folder after converting |
 | `--single-file [file]` | Output a single portable HTML file instead of a folder |
+| `--image-format <fmt>` | Raster page encoding: `keep` (as-is, default) or `webp` |
 
 ### Single file
 
@@ -90,6 +91,17 @@ tojiru book.pdf --single-file book.html
 Produces one `.html` file with all pages, thumbnails, and the reader bundled in. Double-click it to read offline — no server, no extra files. Works on any OS that has a browser.
 
 Capped at 30 MB of page data. For large documents, use the folder output and host it.
+
+### Smaller comics
+
+```bash
+tojiru comic.cbz --out comic/ --image-format webp
+```
+
+Comics keep their original images by default (`keep`), so the bundle matches the source.
+Pass `--image-format webp` to re-encode raster pages as WebP — useful for colour comics
+shipped as large PNGs. On the Pepper&Carrot sample this drops the bundle from 1.2 MB to
+324 KB with no visible loss. Pages already in WebP are left untouched.
 
 ### Preview server
 
@@ -144,6 +156,12 @@ npm run dev -- <input> --out <dir>   # run the CLI from source via tsx
 MIT — see [LICENSE](LICENSE).
 
 ## Changelog
+
+### v0.5.0 — WebP comics (2026-06-26)
+
+- `--image-format webp` re-encodes raster (comic) pages to WebP — the Pepper&Carrot sample drops from 1.2 MB to 324 KB. Default stays `keep` (images copied as-is). Pages already in WebP are left untouched.
+- Re-converting into an existing folder now clears the old `pages/` and `thumbs/` first, so a format switch never leaves orphaned page files behind.
+- The repo's comic demo is now WebP, cutting the committed `site/demo` from 1.4 MB to ~550 KB.
 
 ### v0.4.0 — Single-file output (2026-06-26)
 
