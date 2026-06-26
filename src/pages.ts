@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, writeFile, copyFile, rm, stat } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 import { basename, join } from 'node:path'
 import sharp from 'sharp'
@@ -47,12 +47,20 @@ export async function processPages(
       out.push({ n, type: 'vector', w: page.w, h: page.h, file, thumb })
     } else {
       const ext = (basename(page.imagePath).split('.').pop() ?? 'jpg').toLowerCase()
-      // --image-format webp re-encodes comic pages (often large lossless PNGs) to
-      // lossy WebP. Sources already in WebP are copied — re-encoding would only degrade.
+      // --image-format webp re-encodes comic pages (often large lossless PNGs) to lossy
+      // WebP. But an already-compressed source (a low-quality JPEG scan) can come out
+      // *bigger* as WebP, so we encode in memory and keep whichever is smaller — WebP
+      // never inflates a page. Sources already in WebP are copied (no re-encode).
       let file: string
       if (imageFormat === 'webp' && ext !== 'webp') {
-        file = `pages/${stem}.webp`
-        await sharp(page.imagePath).webp({ quality, effort: 6 }).toFile(join(outDir, file))
+        const webp = await sharp(page.imagePath).webp({ quality, effort: 6 }).toBuffer()
+        if (webp.length < (await stat(page.imagePath)).size) {
+          file = `pages/${stem}.webp`
+          await writeFile(join(outDir, file), webp)
+        } else {
+          file = `pages/${stem}.${ext}`
+          await copyFile(page.imagePath, join(outDir, file))
+        }
       } else {
         file = `pages/${stem}.${ext}`
         await copyFile(page.imagePath, join(outDir, file))
