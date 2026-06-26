@@ -10,6 +10,7 @@ import { djvuExtractor } from './extractors/djvu.js'
 import { processPages } from './pages.js'
 import { buildManifest } from './manifest.js'
 import { writeFolder } from './output/folder.js'
+import { writeSingleFile } from './output/single-file.js'
 import type { Extractor, ProgressFn } from './extractors/types.js'
 
 const EXTRACTORS: Extractor[] = [pdfExtractor, cbzExtractor, cb7Extractor, cbrExtractor, djvuExtractor]
@@ -18,6 +19,7 @@ export interface ConvertOptions {
   outDir: string
   title?: string
   onProgress?: ProgressFn
+  singleFile?: string
 }
 
 export interface ConvertResult {
@@ -33,14 +35,28 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
   }
 
   const work = await mkdtemp(join(tmpdir(), 'tojiru-'))
+  // In single-file mode, pages are staged in a temporary bundle dir that gets
+  // cleaned up after the HTML is written. In folder mode, outDir is the final output.
+  const bundleDir = opts.singleFile
+    ? await mkdtemp(join(tmpdir(), 'tojiru-bundle-'))
+    : opts.outDir
+
   try {
     const doc = await extractor.extract(input, work, opts.onProgress)
     if (opts.title) doc.title = opts.title
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
-    const pages = await processPages(doc, opts.outDir, {}, opts.onProgress)
-    await writeFolder(buildManifest(doc.title, doc.kind, pages), opts.outDir)
+    const pages = await processPages(doc, bundleDir, {}, opts.onProgress)
+    const manifest = buildManifest(doc.title, doc.kind, pages)
+    if (opts.singleFile) {
+      await writeSingleFile(manifest, bundleDir, opts.singleFile)
+      return { outDir: opts.singleFile, pageCount: doc.pages.length }
+    }
+    await writeFolder(manifest, bundleDir)
     return { outDir: opts.outDir, pageCount: doc.pages.length }
   } finally {
     await rm(work, { recursive: true, force: true })
+    if (opts.singleFile) {
+      await rm(bundleDir, { recursive: true, force: true })
+    }
   }
 }

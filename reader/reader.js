@@ -8,9 +8,31 @@ async function loadManifest() {
   return res.json()
 }
 
+// Returns raw bytes for a page or thumb file.
+// When window.__TOJIRU_PAGES contains the key, decodes from base64 (single-file
+// mode). Otherwise falls back to a network fetch (folder mode).
+async function getPageBytes(key) {
+  const inline = window.__TOJIRU_PAGES
+  if (inline && Object.prototype.hasOwnProperty.call(inline, key)) {
+    const b64 = inline[key]
+    const bin = atob(b64)
+    const bytes = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+    return bytes
+  }
+  const res = await fetch(key)
+  return new Uint8Array(await res.arrayBuffer())
+}
+
+function mimeFromExt(file) {
+  const ext = file.split('.').pop().toLowerCase()
+  if (ext === 'webp') return 'image/webp'
+  if (ext === 'png') return 'image/png'
+  return 'image/jpeg'
+}
+
 async function fetchSvg(file) {
-  const res = await fetch(file)
-  const buf = new Uint8Array(await res.arrayBuffer())
+  const buf = await getPageBytes(file)
   // If the host already applied Content-Encoding: gzip, the browser inflated it
   // and these bytes are plain SVG (no gzip magic). Only inflate when the bytes
   // are actually gzip — so the reader works on any host, no header dependency.
@@ -37,7 +59,12 @@ async function loadPage(p) {
     return obj
   }
   const img = document.createElement('img')
-  img.src = p.file
+  const inline = window.__TOJIRU_PAGES
+  if (inline && Object.prototype.hasOwnProperty.call(inline, p.file)) {
+    img.src = `data:${mimeFromExt(p.file)};base64,${inline[p.file]}`
+  } else {
+    img.src = p.file
+  }
   img.alt = `page ${p.n}`
   return img
 }
@@ -52,7 +79,12 @@ function init(manifest) {
 
   const thumbs = manifest.pages.map((p) => {
     const t = document.createElement('img')
-    t.src = p.thumb
+    const inlinePages = window.__TOJIRU_PAGES
+    if (inlinePages && Object.prototype.hasOwnProperty.call(inlinePages, p.thumb)) {
+      t.src = `data:${mimeFromExt(p.thumb)};base64,${inlinePages[p.thumb]}`
+    } else {
+      t.src = p.thumb
+    }
     t.loading = 'lazy'
     t.alt = `page ${p.n}`
     t.addEventListener('click', () => goTo(p.n))

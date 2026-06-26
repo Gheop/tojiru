@@ -27,14 +27,10 @@ program
   .option('-t, --title <title>', 'document title')
   .option('-f, --force', 'overwrite a non-empty output folder')
   .option('--serve', 'start a preview server after converting')
-  .action(async (input: string, opts: { out?: string; title?: string; force?: boolean; serve?: boolean }) => {
+  .option('--single-file [file]', 'output a single portable HTML file (double-click to read offline)')
+  .action(async (input: string, opts: { out?: string; title?: string; force?: boolean; serve?: boolean; singleFile?: boolean | string }) => {
     try {
       if (!existsSync(input)) throw new Error(`File not found: ${input}`)
-
-      const outDir = opts.out ?? basename(input).replace(/\.[^.]+$/, '')
-      if (existsSync(outDir) && (await readdir(outDir)).length > 0 && !opts.force) {
-        throw new Error(`Folder ${outDir} is not empty. Use --force to overwrite.`)
-      }
 
       const isTTY = process.stderr.isTTY === true
       const onProgress = isTTY
@@ -43,20 +39,39 @@ program
           }
         : undefined
 
-      const r = await convert(input, { outDir, title: opts.title, onProgress })
+      if (opts.singleFile !== undefined) {
+        // Single-file mode: bundle into a temp dir, write one HTML, remove temp dir.
+        const htmlPath = typeof opts.singleFile === 'string'
+          ? opts.singleFile
+          : basename(input).replace(/\.[^.]+$/, '') + '.html'
 
-      // Clear progress line before success message
-      if (isTTY) process.stderr.write('\x1b[2K\r')
+        const r = await convert(input, { outDir: '', title: opts.title, onProgress, singleFile: htmlPath })
 
-      console.log(`✓ ${r.pageCount} pages → ${r.outDir}/`)
-
-      if (opts.serve) {
-        const server = await serve(outDir)
-        process.stderr.write(`Serving ${outDir} at ${server.url}\n`)
-        openBrowser(server.url)
-        // Keep running — http server holds the event loop open
+        if (isTTY) process.stderr.write('\x1b[2K\r')
+        console.log(`✓ ${r.pageCount} pages → ${htmlPath}`)
+        process.stderr.write(`  Double-click the file to read it offline.\n`)
       } else {
-        process.stderr.write(`  Preview:  tojiru serve ${outDir}\n`)
+        // Folder mode
+        const outDir = opts.out ?? basename(input).replace(/\.[^.]+$/, '')
+        if (existsSync(outDir) && (await readdir(outDir)).length > 0 && !opts.force) {
+          throw new Error(`Folder ${outDir} is not empty. Use --force to overwrite.`)
+        }
+
+        const r = await convert(input, { outDir, title: opts.title, onProgress })
+
+        // Clear progress line before success message
+        if (isTTY) process.stderr.write('\x1b[2K\r')
+
+        console.log(`✓ ${r.pageCount} pages → ${r.outDir}/`)
+
+        if (opts.serve) {
+          const server = await serve(outDir)
+          process.stderr.write(`Serving ${outDir} at ${server.url}\n`)
+          openBrowser(server.url)
+          // Keep running — http server holds the event loop open
+        } else {
+          process.stderr.write(`  Preview:  tojiru serve ${outDir}\n`)
+        }
       }
     } catch (e) {
       console.error(`Error: ${(e as Error).message}`)
