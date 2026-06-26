@@ -9,6 +9,7 @@ import { cbrExtractor } from './extractors/cbr.js'
 import { djvuExtractor } from './extractors/djvu.js'
 import { processPages } from './pages.js'
 import { buildManifest } from './manifest.js'
+import { buildSearchIndex } from './search.js'
 import { writeFolder } from './output/folder.js'
 import { writeSingleFile } from './output/single-file.js'
 import type { Extractor, ProgressFn } from './extractors/types.js'
@@ -48,12 +49,13 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
     if (opts.title) doc.title = opts.title
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
     const pages = await processPages(doc, bundleDir, { imageFormat: opts.imageFormat, quality: opts.quality }, opts.onProgress)
-    const manifest = buildManifest(doc.title, doc.kind, pages)
+    const search = buildSearchIndex(doc)
+    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0)
     if (opts.singleFile) {
-      await writeSingleFile(manifest, bundleDir, opts.singleFile)
+      await writeSingleFile(manifest, bundleDir, opts.singleFile, search)
       return { outDir: opts.singleFile, pageCount: doc.pages.length }
     }
-    await writeFolder(manifest, bundleDir)
+    await writeFolder(manifest, bundleDir, search)
     return { outDir: opts.outDir, pageCount: doc.pages.length }
   } finally {
     await rm(work, { recursive: true, force: true })

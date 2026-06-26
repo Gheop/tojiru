@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { processPages } from '../../src/pages.js'
 import { buildManifest } from '../../src/manifest.js'
+import { buildSearchIndex } from '../../src/search.js'
 import { writeFolder } from '../../src/output/folder.js'
 import { writeSingleFile } from '../../src/output/single-file.js'
 import type { Document } from '../../src/extractors/types.js'
@@ -29,8 +30,8 @@ async function demoDoc(work: string): Promise<Document> {
     title: 'Demo',
     kind: 'pdf',
     pages: [
-      { type: 'vector', svgPath: a, w: 200, h: 300 },
-      { type: 'vector', svgPath: b, w: 200, h: 300 },
+      { type: 'vector', svgPath: a, w: 200, h: 300, text: 'Alpha opens the first chapter here' },
+      { type: 'vector', svgPath: b, w: 200, h: 300, text: 'Beta closes the second chapter here' },
     ],
   }
 }
@@ -40,7 +41,8 @@ export async function makeBundle(outDir: string): Promise<void> {
   try {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, outDir)
-    await writeFolder(buildManifest(doc.title, doc.kind, pages), outDir)
+    const search = buildSearchIndex(doc)
+    await writeFolder(buildManifest(doc.title, doc.kind, pages, search.length > 0), outDir, search)
   } finally {
     await rm(work, { recursive: true, force: true })
   }
@@ -53,9 +55,10 @@ export async function makeSingleFile(outFile: string): Promise<void> {
   try {
     const doc = await demoDoc(work)
     const pages = await processPages(doc, bundle)
-    const manifest = buildManifest(doc.title, doc.kind, pages)
-    await writeFolder(manifest, bundle)
-    await writeSingleFile(manifest, bundle, outFile)
+    const search = buildSearchIndex(doc)
+    const manifest = buildManifest(doc.title, doc.kind, pages, search.length > 0)
+    await writeFolder(manifest, bundle, search)
+    await writeSingleFile(manifest, bundle, outFile, search)
   } finally {
     await rm(work, { recursive: true, force: true })
     await rm(bundle, { recursive: true, force: true })

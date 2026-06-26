@@ -3,13 +3,28 @@ import { basename, extname, join } from 'node:path'
 import type { Document, Extractor, Page, ProgressFn, ExtractOptions } from './types.js'
 import { DEFAULT_QUALITY } from './types.js'
 import { detectKind } from './detect.js'
-import { findPdfConverter } from '../tools.js'
+import { findPdfConverter, hasBinary } from '../tools.js'
 import { run } from '../run.js'
 import sharp from 'sharp'
 import { imageDims } from './images.js'
 
 function pad(n: number, width: number): string {
   return String(n).padStart(width, '0')
+}
+
+// Extracts plain text for every page in one pdftotext pass. pdftotext separates
+// pages with a form feed (\f), so the split lines up one chunk per page. Returns an
+// array indexed by page-1, or an empty array if pdftotext is missing or fails — text
+// is a bonus (powers search), never a reason to fail the conversion.
+async function extractText(file: string, count: number): Promise<string[]> {
+  if (!(await hasBinary('pdftotext'))) return []
+  try {
+    const { stdout } = await run('pdftotext', ['-enc', 'UTF-8', file, '-'])
+    const chunks = stdout.split('\f')
+    return Array.from({ length: count }, (_, i) => (chunks[i] ?? '').replace(/\s+/g, ' ').trim())
+  } catch {
+    return []
+  }
 }
 
 async function pageCount(file: string): Promise<number> {
@@ -67,6 +82,7 @@ export const pdfExtractor: Extractor = {
     }
     const count = await pageCount(file)
     const width = Math.max(4, String(count).length)
+    const text = await extractText(file, count)
     const pages: Page[] = []
 
     for (let i = 1; i <= count; i++) {
@@ -89,12 +105,12 @@ export const pdfExtractor: Extractor = {
         await sharp(pngPath).webp({ quality, effort: 6 }).toFile(webpPath)
         await unlink(svgPath)
         await unlink(pngPath)
-        pages.push({ type: 'raster', imagePath: webpPath, ...(await imageDims(webpPath)) })
+        pages.push({ type: 'raster', imagePath: webpPath, ...(await imageDims(webpPath)), text: text[i - 1] || undefined })
       } else {
         // Vector page: round coordinates to shrink SVG, then store.
         const rounded = roundCoords(svg)
         await writeFile(svgPath, rounded, 'utf8')
-        pages.push({ type: 'vector', svgPath, ...viewBox(rounded) })
+        pages.push({ type: 'vector', svgPath, ...viewBox(rounded), text: text[i - 1] || undefined })
       }
 
       onProgress?.(i, count, 'Converting')

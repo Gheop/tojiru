@@ -1,7 +1,9 @@
 export type Kind = 'pdf' | 'cbz' | 'cbr' | 'cb7' | 'djvu'
 
-export interface VectorPage { type: 'vector'; svgPath: string; w: number; h: number }
-export interface RasterPage { type: 'raster'; imagePath: string; w: number; h: number }
+// `text` is the page's extracted plain text, when the format exposes one (born-digital
+// PDFs via pdftotext). It feeds the client search index and is never rendered.
+export interface VectorPage { type: 'vector'; svgPath: string; w: number; h: number; text?: string }
+export interface RasterPage { type: 'raster'; imagePath: string; w: number; h: number; text?: string }
 export type Page = VectorPage | RasterPage
 
 export interface Document {
