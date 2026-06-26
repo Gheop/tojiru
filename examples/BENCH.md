@@ -1,6 +1,6 @@
 # Bench — tojiru
 
-Measurements from 2026-06-26 (tojiru 0.4.0). Command: `tojiru <file> --out <folder>`.
+Measurements from 2026-06-26 (tojiru 0.7.0). Command: `tojiru <file> --out <folder>`.
 Ratio = output bundle size / input file size.
 
 ## Results (5 formats + PDF counter-examples)
@@ -8,8 +8,8 @@ Ratio = output bundle size / input file size.
 | Sample | Format | Pages | Input | Bundle | Ratio |
 |---|---|---|---|---|---|
 | Les non-humains (Ploum) | PDF vector text — Type1 | 9 | 203 KB | 187 KB | **×0.92** |
-| Little Brother (Doctorow) | PDF vector text — TrueType | 134 | 1.9 MB | 7.9 MB | ×4.29 |
-| Pepper&Carrot ep.1 | PDF (raster comic) | 4 | 164 KB | 440 KB | ×2.68 |
+| Little Brother (Doctorow) | PDF vector text — TrueType | 134 | 1.9 MB | 6.6 MB | ×3.58 |
+| Pepper&Carrot ep.1 | PDF (raster comic) | 4 | 164 KB | 410 KB | ×2.49 |
 | NASA SP-4012 v2 | PDF scanned + OCR | 642 | 8.0 MB | 85 MB | ×10.8 |
 | Pepper&Carrot ep.1 | CBZ | 4 | 1.0 MB | 1.1 MB | ×1.06 |
 | Pepper&Carrot ep.1 | CB7 | 4 | 1.0 MB | 1.1 MB | ×1.06 |
@@ -18,11 +18,11 @@ Ratio = output bundle size / input file size.
 
 ## Reading the numbers
 
-**PDF vector text — where tojiru shines.** On "Les non-humains" (embedded Type1 fonts), the bundle is *smaller* than the source PDF (×0.92), with clean, infinitely scalable SVG text. On Little Brother (TrueType), it's ×4.29: still real vector, flawless rendering, but heavier. The difference comes from font encoding: for Type1, `pdftocairo` reuses each glyph via `<symbol>`/`<use>`; for TrueType, it emits one `<path>` per glyph occurrence. Rendering is identical, only the weight changes. Page coordinates are rounded to 2 decimals (0.01 pt), which trims ~25% off the SVG with no visible change — that is what pulled Little Brother down from ×5.6.
+**PDF vector text — where tojiru shines.** On "Les non-humains" (embedded Type1 fonts), the bundle is *smaller* than the source PDF (×0.92), with clean, infinitely scalable SVG text. On Little Brother, it's ×3.58: still real vector, flawless rendering, but heavier. `pdftocairo` deduplicates glyphs on both — 73 unique glyph shapes referenced by ~5500 `<use>` elements on a typical page — so the weight is in the per-glyph *positions*, not the shapes. Two passes shrink that: glyphs are stored once and reused, and page coordinates are rounded to 1 decimal (0.1 pt). The rounding is visually lossless even when zoomed (0.1 pt is ~0.13 px on screen) and trims ~40% off the raw SVG; it is what pulled Little Brother from ×5.6 (no rounding) to ×4.29 (2 dp) to ×3.58 (1 dp).
 
 **Comic archives (CBZ/CB7/CBR) — bundle ≈ input.** Pages are already images: tojiru copies them and adds thumbnails. No bloat (×1.06 to ×1.08).
 
-**Raster comic PDF — now routed to WebP.** When a PDF page is a full-page bitmap (no real vector text), tojiru no longer wraps it in SVG; it re-renders the page and stores a WebP. The Pepper&Carrot PDF dropped from ×33.9 (SVG-wrapped bitmap) to ×2.68. This is the right call for full-colour artwork shipped as a PDF.
+**Raster comic PDF — now routed to WebP.** When a PDF page is a full-page bitmap (no real vector text), tojiru no longer wraps it in SVG; it re-renders the page and stores a WebP (default quality 80, tunable with `--quality`). The Pepper&Carrot PDF dropped from ×33.9 (SVG-wrapped bitmap) to ×2.49. This is the right call for full-colour artwork shipped as a PDF.
 
 **Scanned PDF — still the wrong fit.** NASA SP-4012 is a 642-page bitonal text scan with an OCR layer; the display is an image, so every page is raster. Its embedded scan images are bitonal (1 bit/pixel, very compact); re-rendering them as 150-DPI WebP lands at ×10.8 — slightly heavier than the naive SVG wrap (×10.1), because bitonal beats any general-purpose raster format. Either way it is ×10, far above the source: tojiru is built for vector text, not scans. For scanned books, keep the original PDF or a DjVu.
 

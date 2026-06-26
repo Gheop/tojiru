@@ -8,9 +8,39 @@ async function loadManifest() {
   return res.json()
 }
 
+// Returns raw bytes for a page or thumb file.
+// When window.__TOJIRU_PAGES contains the key, decodes from base64 (single-file
+// mode). Otherwise falls back to a network fetch (folder mode).
+async function getPageBytes(key) {
+  const inline = window.__TOJIRU_PAGES
+  if (inline && Object.prototype.hasOwnProperty.call(inline, key)) {
+    const b64 = inline[key]
+    const bin = atob(b64)
+    const bytes = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+    return bytes
+  }
+  const res = await fetch(key)
+  return new Uint8Array(await res.arrayBuffer())
+}
+
+// UTF-8-safe base64 of an SVG string (btoa is Latin1-only; accented text needs this).
+function svgToBase64(text) {
+  const bytes = new TextEncoder().encode(text)
+  let bin = ''
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+  return btoa(bin)
+}
+
+function mimeFromExt(file) {
+  const ext = file.split('.').pop().toLowerCase()
+  if (ext === 'webp') return 'image/webp'
+  if (ext === 'png') return 'image/png'
+  return 'image/jpeg'
+}
+
 async function fetchSvg(file) {
-  const res = await fetch(file)
-  const buf = new Uint8Array(await res.arrayBuffer())
+  const buf = await getPageBytes(file)
   // If the host already applied Content-Encoding: gzip, the browser inflated it
   // and these bytes are plain SVG (no gzip magic). Only inflate when the bytes
   // are actually gzip — so the reader works on any host, no header dependency.
@@ -32,12 +62,24 @@ async function loadPage(p) {
     text = text.replace(/(<svg[^>]*?)\swidth="[^"]*"/i, '$1').replace(/(<svg[^>]*?)\sheight="[^"]*"/i, '$1')
     const obj = document.createElement('object')
     obj.type = 'image/svg+xml'
-    obj.data = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }))
-    obj.addEventListener('load', () => URL.revokeObjectURL(obj.data), { once: true })
+    if (window.__TOJIRU_PAGES) {
+      // Single file opened via file:// has an opaque (null) origin, so blob: URLs
+      // become blob:null/… which <object> refuses to load. A data: URL works on any
+      // origin. base64 keeps the SVG bytes intact through UTF-8 (accented text).
+      obj.data = `data:image/svg+xml;base64,${svgToBase64(text)}`
+    } else {
+      obj.data = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }))
+      obj.addEventListener('load', () => URL.revokeObjectURL(obj.data), { once: true })
+    }
     return obj
   }
   const img = document.createElement('img')
-  img.src = p.file
+  const inline = window.__TOJIRU_PAGES
+  if (inline && Object.prototype.hasOwnProperty.call(inline, p.file)) {
+    img.src = `data:${mimeFromExt(p.file)};base64,${inline[p.file]}`
+  } else {
+    img.src = p.file
+  }
   img.alt = `page ${p.n}`
   return img
 }
@@ -52,7 +94,12 @@ function init(manifest) {
 
   const thumbs = manifest.pages.map((p) => {
     const t = document.createElement('img')
-    t.src = p.thumb
+    const inlinePages = window.__TOJIRU_PAGES
+    if (inlinePages && Object.prototype.hasOwnProperty.call(inlinePages, p.thumb)) {
+      t.src = `data:${mimeFromExt(p.thumb)};base64,${inlinePages[p.thumb]}`
+    } else {
+      t.src = p.thumb
+    }
     t.loading = 'lazy'
     t.alt = `page ${p.n}`
     t.addEventListener('click', () => goTo(p.n))
