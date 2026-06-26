@@ -4,13 +4,19 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>tojiru</title>
+<script>try{var t=localStorage.getItem('tojiru:theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="reader.css" />
 </head>
 <body>
-<div id="reduce" title="Collapse / expand thumbnails">☰</div>
+<button id="reduce" type="button" title="Collapse / expand thumbnails" aria-label="Collapse or expand thumbnails">☰</button>
+<button id="theme" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
+<div id="search" class="hidden" role="dialog" aria-label="Search the document">
+  <input id="search-input" type="search" placeholder="Search…" aria-label="Search text" autocomplete="off" spellcheck="false" />
+  <div id="search-results" aria-live="polite"></div>
+</div>
 <nav id="menu" aria-label="Pages"></nav>
-<div id="resize" title="Drag to resize"></div>
-<main id="page"></main>
+<div id="resize" title="Drag to resize" aria-hidden="true"></div>
+<main id="page" tabindex="0"></main>
 <script type="module" src="reader.js"></script>
 </body>
 </html>

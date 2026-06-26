@@ -24,6 +24,17 @@ async function getPageBytes(key) {
   return new Uint8Array(await res.arrayBuffer())
 }
 
+// Lazily resolves the search index: the inline global in single-file mode, otherwise
+// search.json fetched once on first use. A missing/failed fetch yields an empty index.
+let searchIndexPromise = null
+function getSearchIndex() {
+  if (searchIndexPromise) return searchIndexPromise
+  searchIndexPromise = window.__TOJIRU_SEARCH
+    ? Promise.resolve(window.__TOJIRU_SEARCH)
+    : fetch('search.json').then((r) => (r.ok ? r.json() : [])).catch(() => [])
+  return searchIndexPromise
+}
+
 // UTF-8-safe base64 of an SVG string (btoa is Latin1-only; accented text needs this).
 function svgToBase64(text) {
   const bytes = new TextEncoder().encode(text)
@@ -92,7 +103,13 @@ function init(manifest) {
   const key = `tojiru:${manifest.title}`
   let current = 0
 
+  // Each thumbnail is a real <button> so it can be reached and activated by
+  // keyboard, not just clicked. The .select class lives on the button.
   const thumbs = manifest.pages.map((p) => {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'thumb'
+    btn.setAttribute('aria-label', `Go to page ${p.n}`)
     const t = document.createElement('img')
     const inlinePages = window.__TOJIRU_PAGES
     if (inlinePages && Object.prototype.hasOwnProperty.call(inlinePages, p.thumb)) {
@@ -101,13 +118,14 @@ function init(manifest) {
       t.src = p.thumb
     }
     t.loading = 'lazy'
-    t.alt = `page ${p.n}`
-    t.addEventListener('click', () => goTo(p.n))
+    t.alt = ''
     const num = document.createElement('span')
     num.className = 'num'
     num.textContent = String(p.n)
-    menu.append(t, num)
-    return t
+    btn.append(t, num)
+    btn.addEventListener('click', () => goTo(p.n))
+    menu.append(btn)
+    return btn
   })
 
   const io = new IntersectionObserver(onIntersect, { root: pageEl, rootMargin: '800px 0px' })
@@ -158,10 +176,94 @@ function init(manifest) {
     }
   }, { passive: true })
 
+  const isNarrow = () => matchMedia('(max-width: 640px)').matches
+
   $('#reduce').addEventListener('click', () => {
     const hidden = menu.classList.toggle('hidden')
-    resize.classList.toggle('hidden', hidden)
-    pageEl.classList.toggle('full', hidden)
+    // On phones the column overlays the page (CSS keeps #page full width), so the
+    // divider and the page offset only matter on wide screens.
+    if (!isNarrow()) {
+      resize.classList.toggle('hidden', hidden)
+      pageEl.classList.toggle('full', hidden)
+    }
+  })
+
+  // Dark-mode toggle. The current theme is data-theme on <html> (set early by the
+  // inline head script for saved overrides); with no override we follow the system.
+  $('#theme').addEventListener('click', () => {
+    const root = document.documentElement
+    const sysDark = matchMedia('(prefers-color-scheme: dark)').matches
+    const current = root.dataset.theme || (sysDark ? 'dark' : 'light')
+    const next = current === 'dark' ? 'light' : 'dark'
+    root.dataset.theme = next
+    try { localStorage.setItem('tojiru:theme', next) } catch {}
+  })
+
+  // --- Full-text search (only when the build shipped an index) ---
+  const searchBox = $('#search')
+  const searchInput = $('#search-input')
+  const searchResults = $('#search-results')
+  let searchTimer = 0
+
+  const openSearch = () => { searchBox.classList.remove('hidden'); searchInput.focus(); searchInput.select() }
+  // preventScroll: focusing the scroll container must not yank it back and cancel the
+  // goTo() jump that runs just before closing.
+  const closeSearch = () => { searchBox.classList.add('hidden'); pageEl.focus({ preventScroll: true }) }
+
+  // Builds a one-line excerpt around the first match in `text` for query `q` (lowercase).
+  function snippet(text, q) {
+    const idx = text.toLowerCase().indexOf(q)
+    if (idx < 0) return null
+    const start = Math.max(0, idx - 30)
+    const end = Math.min(text.length, idx + q.length + 60)
+    return {
+      pre: (start > 0 ? '… ' : '') + text.slice(start, idx),
+      match: text.slice(idx, idx + q.length),
+      post: text.slice(idx + q.length, end) + (end < text.length ? ' …' : ''),
+    }
+  }
+
+  async function runSearch() {
+    const q = searchInput.value.trim().toLowerCase()
+    searchResults.replaceChildren()
+    if (q.length < 2) return
+    const index = await getSearchIndex()
+    const hits = []
+    for (const e of index) {
+      const s = snippet(e.t, q)
+      if (s) hits.push({ n: e.n, s })
+      if (hits.length >= 60) break
+    }
+    if (hits.length === 0) {
+      const empty = document.createElement('div')
+      empty.className = 'empty'
+      empty.textContent = 'No matches'
+      searchResults.append(empty)
+      return
+    }
+    for (const h of hits) {
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'hit'
+      const pno = document.createElement('span')
+      pno.className = 'pno'
+      pno.textContent = `p.${h.n}`
+      const mark = document.createElement('mark')
+      mark.textContent = h.s.match
+      // textContent/createTextNode keep page text inert — no HTML injection from the PDF.
+      btn.append(pno, document.createTextNode(h.s.pre), mark, document.createTextNode(h.s.post))
+      btn.addEventListener('click', () => { goTo(h.n); closeSearch() })
+      searchResults.append(btn)
+    }
+  }
+
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(runSearch, 120)
+  })
+  searchInput.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') { closeSearch(); ev.preventDefault() }
+    else if (ev.key === 'Enter') { searchResults.querySelector('.hit')?.click(); ev.preventDefault() }
   })
 
   // Draggable divider between the thumbnail column and the page area.
@@ -183,11 +285,27 @@ function init(manifest) {
   })
 
   document.addEventListener('keydown', (ev) => {
+    // Open search on Ctrl/Cmd+F or "/", but only when a search index shipped — without
+    // one, leave the browser's native find untouched.
+    if (manifest.searchable && ((ev.key === 'f' && (ev.ctrlKey || ev.metaKey)) ||
+        (ev.key === '/' && !(ev.target instanceof HTMLInputElement)))) {
+      openSearch(); ev.preventDefault(); return
+    }
+    // Don't let page navigation steal keys while typing in the search box.
+    if (ev.target instanceof HTMLInputElement) return
     if (['ArrowDown', 'ArrowRight', ' ', 'PageDown', 'n'].includes(ev.key)) { goTo(current + 1); ev.preventDefault() }
     else if (['ArrowUp', 'ArrowLeft', 'PageUp', 'p'].includes(ev.key)) { goTo(current - 1); ev.preventDefault() }
     else if (ev.key === 'Home') goTo(1)
     else if (ev.key === 'End') goTo(manifest.pages.length)
   })
+
+  // On phones, start with the thumbnail column collapsed so the page gets the full
+  // width; the ☰ button reveals it as an overlay.
+  if (isNarrow()) {
+    menu.classList.add('hidden')
+    resize.classList.add('hidden')
+    pageEl.classList.add('full')
+  }
 
   const fromHash = location.hash.match(/page=(\d+)/)
   const saved = (() => { try { return Number(localStorage.getItem(key)) } catch { return 0 } })()

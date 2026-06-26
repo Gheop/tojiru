@@ -2,41 +2,95 @@
    thumbnail column on the left, centered pages with a silver border and shadow,
    pages/thumbnails dimmed in opacity, the current page at full opacity. */
 
+:root {
+  --bg: #fff;
+  --muted: #999;
+  --chrome-bg: rgba(255, 255, 255, .85);
+  --chrome-fg: #555;
+  --chrome-border: #bbb;
+  --divider-bg: #ececec;
+  --divider-border: #999;
+  --page-border: silver;
+  --page-shadow: #ccc;
+  --focus: #4a90d9;
+  color-scheme: light;
+}
+
+/* Dark theme: explicit override (toggle button writes data-theme), and the same
+   values applied automatically when the system is dark and no light override is set. */
+:root[data-theme="dark"] { --bg: #1c1c1e; --muted: #888; --chrome-bg: rgba(44, 44, 46, .9); --chrome-fg: #ccc; --chrome-border: #555; --divider-bg: #2c2c2e; --divider-border: #666; --page-border: #555; --page-shadow: #000; color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #1c1c1e; --muted: #888; --chrome-bg: rgba(44, 44, 46, .9); --chrome-fg: #ccc; --chrome-border: #555; --divider-bg: #2c2c2e; --divider-border: #666; --page-border: #555; --page-shadow: #000; color-scheme: dark; }
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
-body { font-family: verdana, sans-serif; background: #fff; }
+body { font-family: verdana, sans-serif; background: var(--bg); }
 #page, #menu { user-select: none; }
 
-#reduce {
-  position: fixed; top: 5px; left: 5px; z-index: 2;
-  width: 20px; height: 20px; line-height: 18px; text-align: center;
-  background: rgba(255, 255, 255, .85); border: 1px solid #bbb; border-radius: 3px;
-  cursor: pointer; font-size: 12px; color: #555;
+#reduce, #theme {
+  position: fixed; top: 5px; z-index: 4;
+  width: 20px; height: 20px; line-height: 18px; text-align: center; padding: 0;
+  background: var(--chrome-bg); border: 1px solid var(--chrome-border); border-radius: 3px;
+  cursor: pointer; font-size: 12px; color: var(--chrome-fg); font-family: inherit;
 }
+#reduce { left: 5px; }
+#theme { left: 30px; }
+#reduce:focus-visible, #theme:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+/* Search panel: Ctrl+F (or /) opens it over the top of the page area. */
+#search {
+  position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 6;
+  width: min(440px, calc(100vw - 24px));
+  background: var(--bg); border: 1px solid var(--chrome-border); border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .25); padding: 6px;
+}
+#search.hidden { display: none; }
+#search-input {
+  width: 100%; box-sizing: border-box; padding: 7px 9px; font: inherit; font-size: 14px;
+  color: var(--chrome-fg); background: var(--bg);
+  border: 1px solid var(--chrome-border); border-radius: 4px;
+}
+#search-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+#search-results { max-height: 50vh; overflow: auto; margin-top: 6px; }
+#search-results:empty { display: none; }
+#search-results .hit {
+  display: block; width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 4px;
+  background: none; color: var(--chrome-fg); font: inherit; font-size: 13px; cursor: pointer; line-height: 1.35;
+}
+#search-results .hit:hover, #search-results .hit:focus-visible { background: var(--divider-bg); outline: none; }
+#search-results .hit .pno { color: var(--muted); font-size: 11px; margin-right: 6px; }
+#search-results .hit mark { background: #ffe066; color: #000; border-radius: 2px; }
+#search-results .empty { padding: 6px 8px; color: var(--muted); font-size: 13px; }
 
 #menu {
   position: fixed; top: 0; bottom: 0; left: 0; width: 150px;
-  overflow: auto; text-align: center; background: #fff; padding-top: 28px;
+  overflow: auto; text-align: center; background: var(--bg); padding-top: 28px;
 }
 #menu.hidden { display: none; }
-#menu img {
-  width: 100px; margin: 10px 0 2px; cursor: pointer; background: #fff;
-  opacity: .5; border: 1px solid silver; box-shadow: .2em .2em #ccc;
+#menu .thumb {
+  display: block; width: 100%; padding: 0; margin: 0; border: 0;
+  background: none; cursor: pointer; text-align: center; font-family: inherit;
+}
+#menu .thumb img {
+  width: 100px; margin: 10px 0 2px; background: #fff;
+  opacity: .5; border: 1px solid var(--page-border); box-shadow: .2em .2em var(--page-shadow);
   transition: opacity .15s ease, width .1s ease;
 }
-#menu img:hover { width: 104px; }
-#menu img.select { opacity: 1; }
-#menu .num { display: block; font-size: 11px; color: #999; margin-bottom: 8px; }
+#menu .thumb:hover img { width: 104px; }
+#menu .thumb.select img { opacity: 1; }
+#menu .thumb:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+#menu .num { display: block; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 
 #resize {
   position: fixed; top: 0; bottom: 0; left: 150px; width: 4px;
-  border-right: 1px solid #999; background: #ececec; cursor: col-resize; z-index: 1;
+  border-right: 1px solid var(--divider-border); background: var(--divider-bg); cursor: col-resize; z-index: 1;
 }
 #resize.hidden { display: none; }
 
 #page {
   position: fixed; top: 0; bottom: 0; left: 155px; right: 0;
-  overflow: auto; text-align: center; scroll-behavior: smooth; background: #fff;
+  overflow: auto; text-align: center; scroll-behavior: smooth; background: var(--bg);
 }
 #page.full { left: 0; }
 
@@ -45,10 +99,10 @@ body { font-family: verdana, sans-serif; background: #fff; }
 }
 .page object, .page img {
   display: block; width: 100%; height: 100%;
-  border: 1px solid silver; box-shadow: .2em .2em #ccc;
+  border: 1px solid var(--page-border); box-shadow: .2em .2em var(--page-shadow);
   background: #fff; opacity: .7; transition: opacity .25s ease;
 }
-.page.select object, .page.select img { opacity: 1; border-color: #777; }
+.page.select object, .page.select img { opacity: 1; border-color: var(--divider-border); }
 
 /* Thin scrollbars, hidden until hovered. */
 #menu, #page { scrollbar-width: thin; scrollbar-color: transparent transparent; }
@@ -56,3 +110,16 @@ body { font-family: verdana, sans-serif; background: #fff; }
 #menu::-webkit-scrollbar, #page::-webkit-scrollbar { width: 7px; }
 #menu::-webkit-scrollbar-thumb, #page::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
 #menu:hover::-webkit-scrollbar-thumb, #page:hover::-webkit-scrollbar-thumb { background: #c4c4c4; }
+
+/* Phones: the thumbnail column overlays the page instead of pushing it, the page
+   is always full width, and tap targets are a little larger. reader.js collapses
+   the column by default on small screens. */
+@media (max-width: 640px) {
+  #reduce, #theme { width: 30px; height: 30px; line-height: 28px; font-size: 16px; }
+  #theme { left: 40px; }
+  #menu { width: 72vw; max-width: 280px; z-index: 3; box-shadow: 2px 0 14px rgba(0, 0, 0, .35); }
+  #menu .thumb img { width: 120px; }
+  #menu .thumb:hover img { width: 120px; }
+  #resize { display: none; }
+  #page { left: 0; }
+}
