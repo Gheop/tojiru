@@ -87,14 +87,16 @@ Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
 | `--quality <n>` | WebP quality 1-100 for lossy raster pages (default: 80) |
 | `--spread` | Lay pages out two-up (double-page spread) |
 | `--rtl` | Right-to-left reading order (manga); pairs with `--spread` |
+| `--paged` | Default to the paged view (one page per screen); the reader can switch back |
 
 ### Reading
 
 The generated reader works the same whatever the source format:
 
 - **Search** — Ctrl+F (or `/`) opens a text search for PDFs that shipped a text layer. Matches list the page with a highlighted excerpt; click one to jump there.
-- **Table of contents** — when a PDF has an outline, it shows at the top of the thumbnail column; click an entry to jump to its page.
+- **Table of contents** — when a PDF has an outline, it shows at the top of the thumbnail column; click an entry to jump to its page, and the current section is highlighted as you read.
 - **Dark mode** — follows the system by default; the ◐ button toggles it and remembers your choice.
+- **Paged view** — the ≣ / ▭ button switches between continuous scroll and one page per screen (horizontal, arrow-key or swipe navigation). `--paged` makes the paged view the default; the choice is remembered.
 - **Double-page / manga** — `--spread` shows two pages per row; add `--rtl` for right-to-left order (page 1 on the right, left arrow advances).
 
 ```bash

@@ -24,6 +24,18 @@ test('--spread and --rtl flow into the manifest', async (ctx) => {
   expect(manifest.rtl).toBe(true)
 })
 
+test('--paged sets the default reading layout', async (ctx) => {
+  if (!(await findPdfConverter())) ctx.skip()
+
+  const pdf = join(dir, 'paged.pdf')
+  await makePdf(pdf, 2)
+  const out = join(dir, 'paged-bundle')
+  await convert(pdf, { outDir: out, paged: true })
+
+  const manifest = JSON.parse(await readFile(join(out, 'manifest.json'), 'utf8'))
+  expect(manifest.layout).toBe('paged')
+})
+
 test('without the flags the manifest carries no layout fields', async (ctx) => {
   if (!(await findPdfConverter())) ctx.skip()
 
@@ -35,4 +47,5 @@ test('without the flags the manifest carries no layout fields', async (ctx) => {
   const manifest = JSON.parse(await readFile(join(out, 'manifest.json'), 'utf8'))
   expect(manifest.spread).toBeUndefined()
   expect(manifest.rtl).toBeUndefined()
+  expect(manifest.layout).toBeUndefined()
 })

@@ -170,7 +170,17 @@ function init(manifest) {
   pageEl.classList.toggle('spread', !!manifest.spread)
   pageEl.classList.toggle('rtl', !!manifest.rtl)
 
-  const io = new IntersectionObserver(onIntersect, { root: pageEl, rootMargin: '800px 0px' })
+  // Reading layout: 'scroll' (vertical continuous) or 'paged' (one page per screen). A
+  // saved choice wins; otherwise the build's default (manifest.layout) applies.
+  let layout = (() => {
+    try { const saved = localStorage.getItem('tojiru:layout'); if (saved === 'paged' || saved === 'scroll') return saved } catch {}
+    return manifest.layout === 'paged' ? 'paged' : 'scroll'
+  })()
+  const paged = () => layout === 'paged'
+  pageEl.classList.toggle('paged', paged())
+
+  // 800px on every side so the next page preloads whichever way the reader scrolls.
+  const io = new IntersectionObserver(onIntersect, { root: pageEl, rootMargin: '800px' })
   const containers = manifest.pages.map((p) => {
     const c = document.createElement('div')
     c.className = 'page'
@@ -207,15 +217,27 @@ function init(manifest) {
 
   function goTo(n) {
     n = Math.min(Math.max(1, n), manifest.pages.length)
-    containers[n - 1].scrollIntoView()
+    // Paged scrolls horizontally to centre the page; scroll mode aligns it to the top.
+    containers[n - 1].scrollIntoView(paged() ? { inline: 'center', block: 'nearest' } : undefined)
     setCurrent(n)
   }
 
   pageEl.addEventListener('scroll', () => {
-    const mid = pageEl.scrollTop + pageEl.clientHeight / 2
-    for (let i = 0; i < containers.length; i++) {
-      const c = containers[i]
-      if (c.offsetTop <= mid && c.offsetTop + c.offsetHeight > mid) { setCurrent(i + 1); break }
+    if (paged()) {
+      // Horizontal: the page whose box spans the viewport's centre x is current. Using
+      // getBoundingClientRect keeps this correct under rtl, where scrollLeft flips sign.
+      const r = pageEl.getBoundingClientRect()
+      const cx = r.left + r.width / 2
+      for (let i = 0; i < containers.length; i++) {
+        const cr = containers[i].getBoundingClientRect()
+        if (cr.left <= cx && cx < cr.right) { setCurrent(i + 1); break }
+      }
+    } else {
+      const mid = pageEl.scrollTop + pageEl.clientHeight / 2
+      for (let i = 0; i < containers.length; i++) {
+        const c = containers[i]
+        if (c.offsetTop <= mid && c.offsetTop + c.offsetHeight > mid) { setCurrent(i + 1); break }
+      }
     }
   }, { passive: true })
 
@@ -240,6 +262,19 @@ function init(manifest) {
     const next = current === 'dark' ? 'light' : 'dark'
     root.dataset.theme = next
     try { localStorage.setItem('tojiru:theme', next) } catch {}
+  })
+
+  // Reading-layout toggle: continuous scroll (≣) ↔ paged (▭). The icon shows the
+  // current mode; switching re-centres the current page in the new axis.
+  const layoutBtn = $('#layout')
+  const syncLayoutBtn = () => { layoutBtn.textContent = paged() ? '▭' : '≣' }
+  syncLayoutBtn()
+  layoutBtn.addEventListener('click', () => {
+    layout = paged() ? 'scroll' : 'paged'
+    pageEl.classList.toggle('paged', paged())
+    try { localStorage.setItem('tojiru:layout', layout) } catch {}
+    syncLayoutBtn()
+    if (current) goTo(current)
   })
 
   // --- Full-text search (only when the build shipped an index) ---

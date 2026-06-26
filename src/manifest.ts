@@ -16,6 +16,9 @@ export interface Manifest {
   spread?: boolean
   // Right-to-left reading order (manga): flips each spread pair and the horizontal keys.
   rtl?: boolean
+  // Default reading layout. 'paged' starts in the one-page-per-screen view; the reader's
+  // runtime toggle (saved to localStorage) overrides it. Absent means continuous scroll.
+  layout?: 'paged'
 }
 
 // Optional manifest fields, kept in one bag so callers don't thread a growing list of
@@ -25,6 +28,7 @@ export interface ManifestExtras {
   outline?: OutlineEntry[]
   spread?: boolean
   rtl?: boolean
+  paged?: boolean
 }
 
 export function buildManifest(title: string, kind: Kind, pages: ProcessedPage[], extras: ManifestExtras = {}): Manifest {
@@ -33,5 +37,6 @@ export function buildManifest(title: string, kind: Kind, pages: ProcessedPage[],
   if (extras.outline && extras.outline.length) m.outline = extras.outline
   if (extras.spread) m.spread = true
   if (extras.rtl) m.rtl = true
+  if (extras.paged) m.layout = 'paged'
   return m
 }

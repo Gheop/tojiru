@@ -25,6 +25,7 @@ export interface ConvertOptions {
   quality?: number
   spread?: boolean
   rtl?: boolean
+  paged?: boolean
 }
 
 export interface ConvertResult {
@@ -57,6 +58,7 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
       outline: doc.outline,
       spread: opts.spread,
       rtl: opts.rtl,
+      paged: opts.paged,
     })
     if (opts.singleFile) {
       await writeSingleFile(manifest, bundleDir, opts.singleFile, search)
