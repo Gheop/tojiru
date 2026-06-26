@@ -76,6 +76,7 @@ body { font-family: verdana, sans-serif; background: var(--bg); }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toc-item:hover, .toc-item:focus-visible { background: var(--divider-bg); outline: none; }
+.toc-item.active { color: var(--focus); font-weight: 600; }
 #menu .thumb {
   display: block; width: 100%; padding: 0; margin: 0; border: 0;
   background: none; cursor: pointer; text-align: center; font-family: inherit;

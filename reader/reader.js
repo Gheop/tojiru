@@ -105,6 +105,8 @@ function init(manifest) {
 
   // Table of contents, when the document carries an outline. It sits at the top of the
   // thumbnail column; each entry jumps to its page (goTo is hoisted, defined below).
+  // tocEntries keeps each button with its page so the current section can be highlighted.
+  const tocEntries = []
   if (manifest.outline && manifest.outline.length) {
     const toc = document.createElement('div')
     toc.id = 'toc'
@@ -121,8 +123,21 @@ function init(manifest) {
       item.style.paddingLeft = `${8 + Math.min(e.depth, 5) * 12}px`
       item.addEventListener('click', () => goTo(e.page))
       toc.append(item)
+      tocEntries.push({ el: item, page: e.page })
     }
     menu.append(toc)
+  }
+
+  // Highlights the outline entry covering page n: the last one whose page is ≤ n.
+  let activeToc = -1
+  function updateTocActive(n) {
+    if (!tocEntries.length) return
+    let idx = -1
+    for (let i = 0; i < tocEntries.length; i++) if (tocEntries[i].page <= n) idx = i
+    if (idx === activeToc) return
+    tocEntries[activeToc]?.el.classList.remove('active')
+    activeToc = idx
+    tocEntries[idx]?.el.classList.add('active')
   }
 
   // Each thumbnail is a real <button> so it can be reached and activated by
@@ -185,6 +200,7 @@ function init(manifest) {
     thumbs[current - 1]?.classList.add('select')
     containers[current - 1]?.classList.add('select')
     thumbs[current - 1]?.scrollIntoView({ block: 'nearest' })
+    updateTocActive(n)
     history.replaceState(null, '', `#page=${n}`)
     try { localStorage.setItem(key, String(n)) } catch {}
   }
