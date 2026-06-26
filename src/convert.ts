@@ -20,6 +20,7 @@ export interface ConvertOptions {
   title?: string
   onProgress?: ProgressFn
   singleFile?: string
+  imageFormat?: 'keep' | 'webp'
 }
 
 export interface ConvertResult {
@@ -45,7 +46,7 @@ export async function convert(input: string, opts: ConvertOptions): Promise<Conv
     const doc = await extractor.extract(input, work, opts.onProgress)
     if (opts.title) doc.title = opts.title
     if (doc.pages.length === 0) throw new Error('No pages extracted.')
-    const pages = await processPages(doc, bundleDir, {}, opts.onProgress)
+    const pages = await processPages(doc, bundleDir, { imageFormat: opts.imageFormat }, opts.onProgress)
     const manifest = buildManifest(doc.title, doc.kind, pages)
     if (opts.singleFile) {
       await writeSingleFile(manifest, bundleDir, opts.singleFile)
