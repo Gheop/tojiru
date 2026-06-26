@@ -24,6 +24,14 @@ async function getPageBytes(key) {
   return new Uint8Array(await res.arrayBuffer())
 }
 
+// UTF-8-safe base64 of an SVG string (btoa is Latin1-only; accented text needs this).
+function svgToBase64(text) {
+  const bytes = new TextEncoder().encode(text)
+  let bin = ''
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+  return btoa(bin)
+}
+
 function mimeFromExt(file) {
   const ext = file.split('.').pop().toLowerCase()
   if (ext === 'webp') return 'image/webp'
@@ -54,8 +62,15 @@ async function loadPage(p) {
     text = text.replace(/(<svg[^>]*?)\swidth="[^"]*"/i, '$1').replace(/(<svg[^>]*?)\sheight="[^"]*"/i, '$1')
     const obj = document.createElement('object')
     obj.type = 'image/svg+xml'
-    obj.data = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }))
-    obj.addEventListener('load', () => URL.revokeObjectURL(obj.data), { once: true })
+    if (window.__TOJIRU_PAGES) {
+      // Single file opened via file:// has an opaque (null) origin, so blob: URLs
+      // become blob:null/… which <object> refuses to load. A data: URL works on any
+      // origin. base64 keeps the SVG bytes intact through UTF-8 (accented text).
+      obj.data = `data:image/svg+xml;base64,${svgToBase64(text)}`
+    } else {
+      obj.data = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }))
+      obj.addEventListener('load', () => URL.revokeObjectURL(obj.data), { once: true })
+    }
     return obj
   }
   const img = document.createElement('img')

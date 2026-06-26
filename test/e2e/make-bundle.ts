@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { processPages } from '../../src/pages.js'
 import { buildManifest } from '../../src/manifest.js'
 import { writeFolder } from '../../src/output/folder.js'
+import { writeSingleFile } from '../../src/output/single-file.js'
 import type { Document } from '../../src/extractors/types.js'
 
 function svg(label: string): string {
@@ -19,25 +20,45 @@ function svg(label: string): string {
 </svg>`
 }
 
+async function demoDoc(work: string): Promise<Document> {
+  const a = join(work, 'a.svg')
+  const b = join(work, 'b.svg')
+  await writeFile(a, svg('Page 1'))
+  await writeFile(b, svg('Page 2'))
+  return {
+    title: 'Demo',
+    kind: 'pdf',
+    pages: [
+      { type: 'vector', svgPath: a, w: 200, h: 300 },
+      { type: 'vector', svgPath: b, w: 200, h: 300 },
+    ],
+  }
+}
+
 export async function makeBundle(outDir: string): Promise<void> {
   const work = await mkdtemp(join(tmpdir(), 'tojiru-e2e-'))
   try {
-    const a = join(work, 'a.svg')
-    const b = join(work, 'b.svg')
-    await writeFile(a, svg('Page 1'))
-    await writeFile(b, svg('Page 2'))
-    const doc: Document = {
-      title: 'Demo',
-      kind: 'pdf',
-      pages: [
-        { type: 'vector', svgPath: a, w: 200, h: 300 },
-        { type: 'vector', svgPath: b, w: 200, h: 300 },
-      ],
-    }
+    const doc = await demoDoc(work)
     const pages = await processPages(doc, outDir)
     await writeFolder(buildManifest(doc.title, doc.kind, pages), outDir)
   } finally {
     await rm(work, { recursive: true, force: true })
+  }
+}
+
+// Builds a single-file HTML (the double-click / file:// output) into outFile.
+export async function makeSingleFile(outFile: string): Promise<void> {
+  const work = await mkdtemp(join(tmpdir(), 'tojiru-e2e-sf-'))
+  const bundle = await mkdtemp(join(tmpdir(), 'tojiru-e2e-sfb-'))
+  try {
+    const doc = await demoDoc(work)
+    const pages = await processPages(doc, bundle)
+    const manifest = buildManifest(doc.title, doc.kind, pages)
+    await writeFolder(manifest, bundle)
+    await writeSingleFile(manifest, bundle, outFile)
+  } finally {
+    await rm(work, { recursive: true, force: true })
+    await rm(bundle, { recursive: true, force: true })
   }
 }
 
