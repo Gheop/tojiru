@@ -163,6 +163,10 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.7.0 — Lighter vector text (2026-06-26)
+
+- SVG page coordinates are now rounded to 1 decimal (0.1 pt) instead of 2 — measured ~19% lighter (gzipped) on glyph-heavy text PDFs, verified visually lossless even when zoomed (0.1 pt is ~0.13 px on screen).
+
 ### v0.6.0 — WebP quality control (2026-06-26)
 
 - `--quality <n>` (default 80) sets the lossy WebP quality for comic and auto-rasterized PDF pages. The default dropped from 82 to 80 — measured ~8% smaller with no visible loss.
