@@ -183,6 +183,13 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.9.0 — Paged view, contents highlight, leaner comics (2026-06-26)
+
+- **Paged reading view** — the ≣ / ▭ button switches the reader between continuous scroll and one page per screen (horizontal, arrow-key or swipe navigation), and the choice is remembered. `--paged` makes it the build default; `--rtl` pages it right-to-left.
+- **The table of contents follows along** — the outline entry covering the current page is highlighted as you read.
+- **`--image-format webp` never inflates a comic** — each page keeps WebP or its original, whichever is smaller. An already-compressed scan that used to grow ~2× now stays at its source size, while colour comics still drop to ~×0.3 (measured points in [`examples/BENCH.md`](examples/BENCH.md)).
+- Tests run in CI on Node 24 (the Node 20 deprecation warning is gone), and a flaky reader e2e was de-flaked.
+
 ### v0.8.0 — Search, dark mode, contents and manga layout (2026-06-26)
 
 - **Full-text search** (Ctrl+F or `/`) for PDFs that carry a text layer. `pdftotext` builds an index at conversion time (a `search.json` file, or inlined in single-file mode); matches list the page with a highlighted excerpt and jump there on click. Scans and comics keep the browser's native find.
