@@ -15,6 +15,7 @@ tojiru book.pdf --out site/
 - **PDF** pages become crisp **vector SVG** (via poppler/mupdf). Text stays sharp at any zoom, and for born-digital PDFs the bundle is often *smaller* than the source.
 - **Comics** (CBZ, CB7, CBR) and **DjVu** become image pages with thumbnails.
 - The reader lazy-loads pages as you scroll (`IntersectionObserver`), has a thumbnail sidebar, keyboard navigation, reading-position memory (`localStorage`), and `#page=N` deep links.
+- **Full-text search** (Ctrl+F) for PDFs with a text layer, a **table of contents** built from the PDF outline, a **dark theme** that follows the system, a phone-friendly layout, and an optional **double-page / right-to-left (manga)** view.
 - SVG pages are gzipped and **inflated in the browser** (`DecompressionStream`), so they render correctly on any host regardless of its `Content-Encoding` configuration.
 
 ## Supported formats
@@ -28,6 +29,8 @@ tojiru book.pdf --out site/
 | DjVu | rendered page by page | `ddjvu`, `djvused` (djvulibre) |
 
 Comics work out of the box. Only PDF and DjVu need a system tool, detected at runtime — if it's missing, `tojiru` tells you which package to install instead of crashing.
+
+Two PDF extras are picked up automatically when present: `pdftotext` (poppler, usually installed with `pdftocairo`) builds the search index, and `mutool` (mupdf) reads the outline for the table of contents. Both are optional — without them you just lose that one feature.
 
 ## Install
 
@@ -57,9 +60,9 @@ Optional system tools (install only what you need):
 
 ```bash
 # Debian/Ubuntu
-sudo apt install poppler-utils djvulibre-bin p7zip-full
+sudo apt install poppler-utils djvulibre-bin p7zip-full mupdf-tools
 # Fedora
-sudo dnf install poppler-utils djvulibre p7zip
+sudo dnf install poppler-utils djvulibre p7zip mupdf
 ```
 
 ## Usage
@@ -82,6 +85,21 @@ Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
 | `--single-file [file]` | Output a single portable HTML file instead of a folder |
 | `--image-format <fmt>` | Raster page encoding: `keep` (as-is, default) or `webp` |
 | `--quality <n>` | WebP quality 1-100 for lossy raster pages (default: 80) |
+| `--spread` | Lay pages out two-up (double-page spread) |
+| `--rtl` | Right-to-left reading order (manga); pairs with `--spread` |
+
+### Reading
+
+The generated reader works the same whatever the source format:
+
+- **Search** — Ctrl+F (or `/`) opens a text search for PDFs that shipped a text layer. Matches list the page with a highlighted excerpt; click one to jump there.
+- **Table of contents** — when a PDF has an outline, it shows at the top of the thumbnail column; click an entry to jump to its page.
+- **Dark mode** — follows the system by default; the ◐ button toggles it and remembers your choice.
+- **Double-page / manga** — `--spread` shows two pages per row; add `--rtl` for right-to-left order (page 1 on the right, left arrow advances).
+
+```bash
+tojiru manga.cbz --out manga/ --image-format webp --spread --rtl
+```
 
 ### Single file
 
