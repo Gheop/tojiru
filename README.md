@@ -181,6 +181,15 @@ MIT — see [LICENSE](LICENSE).
 
 ## Changelog
 
+### v0.8.0 — Search, dark mode, contents and manga layout (2026-06-26)
+
+- **Full-text search** (Ctrl+F or `/`) for PDFs that carry a text layer. `pdftotext` builds an index at conversion time (a `search.json` file, or inlined in single-file mode); matches list the page with a highlighted excerpt and jump there on click. Scans and comics keep the browser's native find.
+- **Dark theme** that follows the system by default, with a ◐ button that toggles and remembers the choice. The reader now has a phone layout (the thumbnail column collapses to an overlay, full-width pages, larger tap targets), and the toolbar controls and thumbnails are real buttons reachable by keyboard.
+- **Table of contents** built from the PDF outline via `mutool`, shown at the top of the thumbnail column; click an entry to jump to its page. Falls back to nothing when `mutool` or the outline is absent.
+- **Double-page spread** (`--spread`) and **right-to-left manga order** (`--rtl`): two pages per row, page 1 on the right, the left arrow advances. Pairs wrap to one page per row on narrow screens.
+- Tests now run in CI on GitHub and GitLab, and `--serve` opens a browser on Windows too.
+- Internals: the single-file output is derived from `index.html` instead of duplicating the markup, and `buildManifest` takes an options object.
+
 ### v0.7.0 — Lighter vector text (2026-06-26)
 
 - SVG page coordinates are now rounded to 1 decimal (0.1 pt) instead of 2 — measured ~19% lighter (gzipped) on glyph-heavy text PDFs, verified visually lossless even when zoomed (0.1 pt is ~0.13 px on screen).

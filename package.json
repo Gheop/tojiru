@@ -1,6 +1,6 @@
 {
   "name": "@gheop/tojiru",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Turn a fixed-page document (PDF, comic, DjVu) into a static web reader",
   "type": "module",
   "bin": {
