@@ -20,17 +20,12 @@ test('the reader renders pages via <object> and isolates glyphs per page', async
   // not <object>. We use page.evaluate() to access the contentDocument
   // of <object> elements (possible because blob: URLs share the page origin).
   // This verifies glyph non-regression: each page renders its own #ink.
-  const texts = await page.evaluate(() => {
+  // Poll: an <object>'s contentDocument is populated asynchronously after it becomes
+  // visible, so reading it once races on slower machines (it was flaky in CI).
+  await expect.poll(async () => page.evaluate(() => {
     const objects = Array.from(document.querySelectorAll('.page object')) as HTMLObjectElement[]
-    return objects.map((obj) => {
-      const doc = obj.contentDocument
-      if (!doc) return null
-      // SVG <text> element
-      return doc.querySelector('text')?.textContent?.trim() ?? null
-    })
-  })
-  expect(texts[0]).toBe('Page 1')
-  expect(texts[1]).toBe('Page 2')
+    return objects.map((obj) => obj.contentDocument?.querySelector('text')?.textContent?.trim() ?? null)
+  })).toEqual(['Page 1', 'Page 2'])
 
   // The two <object> elements have distinct blob: URLs (two separate documents).
   const dataAttrs = await page.evaluate(() => {
