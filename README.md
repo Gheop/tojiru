@@ -81,6 +81,7 @@ Generation shows per-page progress on stderr (e.g. `Converting 12/30`).
 | `--serve` | Start a preview server on the output folder after converting |
 | `--single-file [file]` | Output a single portable HTML file instead of a folder |
 | `--image-format <fmt>` | Raster page encoding: `keep` (as-is, default) or `webp` |
+| `--quality <n>` | WebP quality 1-100 for lossy raster pages (default: 80) |
 
 ### Single file
 
@@ -101,7 +102,12 @@ tojiru comic.cbz --out comic/ --image-format webp
 Comics keep their original images by default (`keep`), so the bundle matches the source.
 Pass `--image-format webp` to re-encode raster pages as WebP — useful for colour comics
 shipped as large PNGs. On the Pepper&Carrot sample this drops the bundle from 1.2 MB to
-324 KB with no visible loss. Pages already in WebP are left untouched.
+~300 KB with no visible loss. Pages already in WebP are left untouched.
+
+`--quality <n>` sets the WebP quality (default 80). Lower it for maximum compression
+(`--quality 75` is ~20% lighter again and still clean on most artwork); raise it for
+archival (`--quality 92`). It applies to lossy raster pages — comics re-encoded with
+`--image-format webp` and auto-rasterized scanned/comic PDFs. DjVu scans stay lossless.
 
 ### Preview server
 
@@ -156,6 +162,12 @@ npm run dev -- <input> --out <dir>   # run the CLI from source via tsx
 MIT — see [LICENSE](LICENSE).
 
 ## Changelog
+
+### v0.6.0 — WebP quality control (2026-06-26)
+
+- `--quality <n>` (default 80) sets the lossy WebP quality for comic and auto-rasterized PDF pages. The default dropped from 82 to 80 — measured ~8% smaller with no visible loss.
+- Thumbnails are now encoded at WebP effort 6 (slightly smaller, free).
+- DjVu stays lossless: benchmarking near-lossless against lossless on bitonal scans showed an identical size (no smooth content to quantize), so there was nothing to gain.
 
 ### v0.5.0 — WebP comics (2026-06-26)
 
