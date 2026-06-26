@@ -6,10 +6,14 @@ import { makePdf } from './helpers/fixtures.js'
 import { pdfExtractor, roundCoords } from '../src/extractors/pdf.js'
 import { findPdfConverter } from '../src/tools.js'
 
-test('roundCoords rounds floats with ≥3 decimals, leaves integers and short floats untouched', () => {
-  const input = '<svg x="1.23456" y="10" z="3.14"/>'
+test('roundCoords trims to 1 decimal by default, leaving integers and 1-decimal floats untouched', () => {
+  const input = '<svg x="1.23456" y="10" z="3.14" w="6.5"/>'
   const out = roundCoords(input)
-  expect(out).toBe('<svg x="1.23" y="10" z="3.14"/>')
+  expect(out).toBe('<svg x="1.2" y="10" z="3.1" w="6.5"/>')
+})
+
+test('roundCoords honours an explicit decimals argument', () => {
+  expect(roundCoords('<svg x="1.23456" z="3.14"/>', 2)).toBe('<svg x="1.23" z="3.14"/>')
 })
 
 let dir: string
